@@ -1,0 +1,76 @@
+cassandra:
+  enabled:      true
+  replicaCount: 3
+  nodeSelector: { role: infra }
+  tolerations:
+    - key: role
+      value: infra
+      effect: NoSchedule
+  persistence:
+    size:         200Gi
+    storageClass: gp3
+  resources:
+    requests: { cpu: "2",  memory: 8Gi  }
+    limits:   { cpu: "4",  memory: 16Gi }
+  # schema-action must always be NONE — schemas are applied by K8S InitContainers
+  extraEnvVars:
+    - name:  CASSANDRA_SCHEMA_ACTION
+      value: none
+
+qdrant:
+  enabled:      true
+  replicaCount: 3
+  nodeSelector: { role: infra }
+  tolerations:
+    - key: role
+      value: infra
+      effect: NoSchedule
+  persistence:
+    size:         50Gi
+    storageClass: gp3
+  resources:
+    requests: { cpu: "1",  memory: 2Gi }
+    limits:   { cpu: "2",  memory: 4Gi }
+  config:
+    storage:
+      on_disk_payload: true
+
+mlflow:
+  enabled: true
+  backendStore:
+    databaseMigration: false
+    postgres:
+      enabled:  true
+      host:     "$(MLFLOW_DB_HOST)"
+      database: mlflow
+      user:     "$(MLFLOW_DB_USER)"
+      password: "$(MLFLOW_DB_PASSWORD)"
+  artifactRoot:
+    s3:
+      enabled:           true
+      bucket:            mlflow-artifacts
+      awsAccessKeyId:     "$(MINIO_ACCESS_KEY)"
+      awsSecretAccessKey: "$(MINIO_SECRET_KEY)"
+      s3EndpointUrl:      http://minio:9000
+  nodeSelector: { role: infra }
+  tolerations:
+    - key: role
+      value: infra
+      effect: NoSchedule
+
+minio:
+  enabled:       true
+  mode:          distributed
+  replicas:      4
+  drivesPerNode: 2
+  nodeSelector:  { role: infra }
+  tolerations:
+    - key: role
+      value: infra
+      effect: NoSchedule
+  persistence:
+    size:         100Gi
+    storageClass: gp3
+  resources:
+    requests: { cpu: "500m", memory: 1Gi }
+    limits:   { cpu: "2",    memory: 4Gi }

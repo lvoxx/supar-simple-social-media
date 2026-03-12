@@ -1,0 +1,17 @@
+{
+  "namespace": "io.github.lvoxx.user",
+  "type": "record",
+  "name": "UserProfileUpdatedEvent",
+  "doc": "Published when a user updates any profile field (displayName, bio, avatar, etc.).",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "user.profile.updated"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "user-service"},
+    {"name": "userId",          "type": "string", "doc": "UUID of the updated user."},
+    {"name": "username",        "type": "string"},
+    {"name": "displayName",     "type": ["null", "string"], "default": null},
+    {"name": "avatarUrl",       "type": ["null", "string"], "default": null}
+  ]
+}

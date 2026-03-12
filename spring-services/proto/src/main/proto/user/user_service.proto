@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package sssm.user;
+
+option java_package         = "io.github.lvoxx.proto.user";
+option java_multiple_files  = true;
+option java_outer_classname = "UserServiceProto";
+
+service UserService {
+    rpc FindUserById        (FindUserByIdRequest)        returns (UserResponse);
+    rpc FindUsersByIds      (FindUsersByIdsRequest)      returns (UserListResponse);
+    rpc CheckUserBlocked    (CheckUserBlockedRequest)    returns (CheckUserBlockedResponse);
+    rpc GetUserSettings     (GetUserSettingsRequest)     returns (UserSettingsResponse);
+    rpc GetNotifPreferences (GetNotifPreferencesRequest) returns (NotifPreferencesResponse);
+}
+
+message FindUserByIdRequest     { string user_id  = 1; }
+message FindUsersByIdsRequest   { repeated string user_ids = 1; }
+message CheckUserBlockedRequest { string blocker_id = 1; string blocked_id = 2; }
+message GetUserSettingsRequest  { string user_id  = 1; }
+message GetNotifPreferencesRequest { string user_id = 1; }
+
+message UserResponse {
+    string  user_id        = 1;
+    string  username       = 2;
+    string  display_name   = 3;
+    string  avatar_url     = 4;
+    bool    is_verified    = 5;
+    bool    is_private     = 6;
+    string  role           = 7;
+    string  status         = 8;
+    int64   created_at_ms  = 9;
+}
+
+message UserListResponse    { repeated UserResponse users = 1; }
+
+message CheckUserBlockedResponse { bool is_blocked = 1; }
+
+message UserSettingsResponse {
+    bool   read_receipts       = 1;
+    bool   online_status       = 2;
+    string notification_level  = 3;
+}
+
+message NotifPreferencesResponse {
+    string fcm_token    = 1;
+    string apns_token   = 2;
+    bool   push_enabled = 3;
+    bool   email_enabled = 4;
+}

@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.group",
+  "type": "record",
+  "name": "GroupMemberJoinedEvent",
+  "doc": "Published when a user successfully joins or is approved into a group.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "group.member.joined"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "group-service"},
+    {"name": "groupId",         "type": "string"},
+    {"name": "userId",          "type": "string"},
+    {"name": "role",            "type": "string", "default": "MEMBER"}
+  ]
+}

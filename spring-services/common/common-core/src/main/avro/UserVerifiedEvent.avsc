@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.user",
+  "type": "record",
+  "name": "UserVerifiedEvent",
+  "doc": "Published when an admin approves a user's identity verification request.",
+  "fields": [
+    {"name": "eventId",           "type": "string"},
+    {"name": "eventType",         "type": "string", "default": "user.verified"},
+    {"name": "version",           "type": "string", "default": "1"},
+    {"name": "timestamp",         "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService",   "type": "string", "default": "user-service"},
+    {"name": "userId",            "type": "string", "doc": "UUID of the verified user."},
+    {"name": "username",          "type": "string"},
+    {"name": "verificationType",  "type": "string", "doc": "IDENTITY | BUSINESS"}
+  ]
+}

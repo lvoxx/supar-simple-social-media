@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: ai-dashboard-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  minAvailable: {{ .Values.global.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: ai-dashboard-service

@@ -1,0 +1,118 @@
+// Jenkinsfile — terraform-plan
+// Runs terraform plan on prod.  Posts the plan output as a comment
+// on the pull request (if triggered from a PR) so reviewers can see
+// the exact diff before merging.
+
+pipeline {
+    agent { label 'terraform-agent' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timeout(time: 20, unit: 'MINUTES')
+        timestamps()
+    }
+
+    parameters {
+        choice(
+            name:        'ENVIRONMENT',
+            choices:     ['prod', 'staging', 'dev'],
+            description: 'Target environment'
+        )
+    }
+
+    environment {
+        TF_IN_AUTOMATION  = 'true'
+        TF_CLI_ARGS       = '-no-color'
+        AWS_DEFAULT_REGION = 'us-east-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                withAWS(credentials: 'aws-terraform-credentials', region: 'us-east-1') {
+                    dir("infrastructure/terraform/environments/${params.ENVIRONMENT}") {
+                        sh '''
+                            terraform init \
+                                -input=false \
+                                -reconfigure
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Terraform Validate') {
+            steps {
+                dir("infrastructure/terraform/environments/${params.ENVIRONMENT}") {
+                    sh 'terraform validate'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                withAWS(credentials: 'aws-terraform-credentials', region: 'us-east-1') {
+                    dir("infrastructure/terraform/environments/${params.ENVIRONMENT}") {
+                        sh '''
+                            terraform plan \
+                                -var-file=terraform.tfvars \
+                                -out=tfplan \
+                                -detailed-exitcode \
+                                2>&1 | tee plan-output.txt
+                        '''
+                        // Archive the plan for apply job to consume
+                        archiveArtifacts artifacts: 'tfplan, plan-output.txt', fingerprint: true
+                    }
+                }
+            }
+        }
+
+        stage('Post Plan to PR') {
+            when { changeRequest() }  // Only on pull requests
+            steps {
+                script {
+                    String planOutput = readFile("infrastructure/terraform/environments/${params.ENVIRONMENT}/plan-output.txt")
+                    // Truncate if too long for PR comment
+                    if (planOutput.length() > 60000) {
+                        planOutput = planOutput.take(60000) + '\n...(truncated, see full output in Jenkins)'
+                    }
+                    pullRequest.comment("""
+## Terraform Plan — `${params.ENVIRONMENT}`
+
+<details><summary>Show Plan</summary>
+
+\`\`\`hcl
+${planOutput}
+\`\`\`
+
+</details>
+
+> Build: [#${env.BUILD_NUMBER}](${env.BUILD_URL})
+                    """.stripIndent())
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: '#platform',
+                color:   'good',
+                message: "✅ Terraform plan (${params.ENVIRONMENT}) — no errors. <${env.BUILD_URL}|View plan>"
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#platform',
+                color:   'danger',
+                message: "❌ Terraform plan (${params.ENVIRONMENT}) FAILED — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>"
+            )
+        }
+        always { cleanWs() }
+    }
+}

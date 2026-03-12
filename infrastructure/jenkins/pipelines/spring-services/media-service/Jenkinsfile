@@ -1,0 +1,10 @@
+// Jenkinsfile — media-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'media-service',
+    servicePort:  8082
+)

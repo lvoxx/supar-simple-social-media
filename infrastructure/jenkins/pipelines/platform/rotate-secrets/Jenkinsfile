@@ -1,0 +1,79 @@
+// Jenkinsfile — rotate-secrets
+// Manually triggered job to rotate a secret and restart the affected service.
+// Wraps the scripts/rotate-secrets.sh script with Jenkins credential injection.
+
+pipeline {
+    agent { label 'kubectl-agent' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps()
+    }
+
+    parameters {
+        string(
+            name:         'SECRET_NAME',
+            defaultValue: '',
+            description:  'AWS Secrets Manager path (e.g. sssm/prod/user-service)'
+        )
+        choice(
+            name:    'ENVIRONMENT',
+            choices: ['prod', 'staging', 'dev'],
+            description: 'Target environment'
+        )
+    }
+
+    environment {
+        KUBECONFIG         = credentials("kubeconfig-${params.ENVIRONMENT}")
+        AWS_DEFAULT_REGION = 'us-east-1'
+    }
+
+    stages {
+        stage('Validate') {
+            steps {
+                script {
+                    if (!params.SECRET_NAME) {
+                        error('SECRET_NAME parameter is required.')
+                    }
+                    echo "Rotating secret: ${params.SECRET_NAME} in ${params.ENVIRONMENT}"
+                }
+            }
+        }
+
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Rotate Secret') {
+            steps {
+                withAWS(credentials: "aws-${params.ENVIRONMENT}-credentials", region: 'us-east-1') {
+                    sh """
+                        chmod +x infrastructure/scripts/rotate-secrets.sh
+                        infrastructure/scripts/rotate-secrets.sh \
+                            '${params.SECRET_NAME}' \
+                            '${params.ENVIRONMENT}'
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: '#platform',
+                color:   'good',
+                message: "🔑 Secret rotated: `${params.SECRET_NAME}` (${params.ENVIRONMENT}) — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>"
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#platform',
+                color:   'danger',
+                message: "❌ Secret rotation FAILED: `${params.SECRET_NAME}` — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>"
+            )
+        }
+        always { cleanWs() }
+    }
+}

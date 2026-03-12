@@ -1,0 +1,12 @@
+env:          prod
+aws_region:   us-east-1
+aws_profile:  sssm-prod
+cluster_name: sssm-prod
+project:      sssm
+
+max_pods_per_node: 110
+
+nvidia_driver_version: "550"
+cuda_version:          "12-4"
+
+node_exporter_version: "1.8.1"

@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.post",
+  "type": "record",
+  "name": "PostRepostedEvent",
+  "doc": "Published when a user reposts an existing post.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "post.reposted"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "post-service"},
+    {"name": "postId",          "type": "string", "doc": "Original post UUID."},
+    {"name": "newPostId",       "type": "string", "doc": "UUID of the newly created repost."},
+    {"name": "userId",          "type": "string"}
+  ]
+}

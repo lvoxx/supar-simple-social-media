@@ -1,0 +1,18 @@
+apiVersion: v2
+name: platform
+description: SSSM platform layer — cert-manager, external-secrets, cluster-autoscaler
+type: application
+version: 1.0.0
+
+dependencies:
+  - name:       cert-manager
+    version:    "1.15.x"
+    repository: https://charts.jetstack.io
+
+  - name:       external-secrets
+    version:    "0.10.x"
+    repository: https://charts.external-secrets.io
+
+  - name:       cluster-autoscaler
+    version:    "9.37.x"
+    repository: https://kubernetes.github.io/autoscaler

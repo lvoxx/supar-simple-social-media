@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: private-message-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: private-message-service
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+      name: http
+  selector:
+    app: private-message-service

@@ -1,0 +1,27 @@
+// pipelines/seed-job/Jenkinsfile
+// Seed Job — creates / updates all SSSM pipeline jobs in Jenkins.
+// Run this job manually once after Jenkins setup, then on any change
+// to the job definitions below.
+//
+// Requires: Job DSL plugin
+
+pipeline {
+    agent { label 'master' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '5'))
+        timestamps()
+    }
+
+    stages {
+        stage('Generate Jobs') {
+            steps {
+                jobDsl(
+                    targets:          'infrastructure/jenkins/pipelines/seed-job/jobs.groovy',
+                    removedJobAction: 'IGNORE',
+                    lookupStrategy:   'SEED_JOB'
+                )
+            }
+        }
+    }
+}

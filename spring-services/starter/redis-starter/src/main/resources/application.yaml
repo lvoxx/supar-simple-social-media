@@ -1,0 +1,35 @@
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      lettuce:
+        pool:
+          max-active: 16
+          max-idle: 8
+          min-idle: 2
+          time-between-eviction-runs: 60s
+  cache:
+    type: redis
+    redis:
+      time-to-live: 300s
+      cache-null-values: false
+      key-prefix: "sssm:"
+
+redisson:
+  single-server-config:
+    address: redis://${REDIS_HOST:localhost}:${REDIS_PORT:6379}
+    password: ${REDIS_PASSWORD:}
+    connection-pool-size: 16
+    connection-minimum-idle-size: 4
+    idle-connection-timeout: 10000
+    connect-timeout: 3000
+
+sssm:
+  rate-limit:
+    enabled: true
+    default-capacity: 100
+    default-refill-tokens: 100
+    default-refill-period: 1m
+    key-prefix: "sssm:rate-limit:"

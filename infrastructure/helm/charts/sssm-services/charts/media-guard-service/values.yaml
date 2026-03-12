@@ -1,0 +1,76 @@
+image:
+  repository: "{{ .Values.global.registry }}/media-guard-service"
+  tag: "1.0.0"
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 8091
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 4
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+    - type: Resource
+      resource:
+        name: memory
+        target: { type: Utilization, averageUtilization: 80 }
+
+resources:
+  requests:
+    cpu:    500m
+    memory: 2Gi
+  limits:
+    cpu:    "2"
+    memory: 4Gi
+
+env:
+  UVICORN_WORKERS: "2"
+  QDRANT_HOST: qdrant.sssm-infra
+  QDRANT_GRPC_PORT: "6334"
+  MLFLOW_TRACKING_URI: http://mlflow.sssm-infra:5000
+
+externalSecrets:
+  - secretName: media-guard-service-secrets
+    remoteRef:  sssm/prod/media-guard-service
+    keys:
+      - KAFKA_BOOTSTRAP_SERVERS
+      - KAFKA_SASL_USERNAME
+      - KAFKA_SASL_PASSWORD
+      - MINIO_ENDPOINT
+      - MINIO_ACCESS_KEY
+      - MINIO_SECRET_KEY
+
+dbInit:
+  enabled: false
+
+
+livenessProbe:
+  httpGet:
+    path: /api/v1/health/liveness
+    port: 8091
+  initialDelaySeconds: 90
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /api/v1/health/readiness
+    port: 8091
+  initialDelaySeconds: 60
+  periodSeconds: 10
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: media-guard-service

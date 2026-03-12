@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: user-analysis-service
+  namespace: {{ .Values.global.namespace }}
+spec:
+  minAvailable: {{ .Values.global.podDisruptionBudget.minAvailable }}
+  selector:
+    matchLabels:
+      app: user-analysis-service

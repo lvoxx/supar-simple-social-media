@@ -1,0 +1,32 @@
+{
+  "settings": {
+    "number_of_shards": 2,
+    "number_of_replicas": 1,
+    "refresh_interval": "1s",
+    "analysis": {
+      "analyzer": {
+        "username_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": ["lowercase", "asciifolding"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id":             { "type": "keyword" },
+      "username":       { "type": "search_as_you_type", "analyzer": "username_analyzer" },
+      "displayName":    { "type": "search_as_you_type", "analyzer": "username_analyzer" },
+      "bio":            { "type": "text" },
+      "avatarUrl":      { "type": "keyword", "index": false },
+      "isVerified":     { "type": "boolean" },
+      "followerCount":  { "type": "integer" },
+      "followingCount": { "type": "integer" },
+      "location":       { "type": "keyword" },
+      "isPrivate":      { "type": "boolean" },
+      "isDeleted":      { "type": "boolean" },
+      "createdAt":      { "type": "date" }
+    }
+  }
+}

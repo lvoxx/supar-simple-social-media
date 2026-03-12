@@ -1,0 +1,31 @@
+CREATE TABLE IF NOT EXISTS users (
+    id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    keycloak_id           UUID        UNIQUE NOT NULL,
+    username              VARCHAR(50) UNIQUE NOT NULL,
+    display_name          VARCHAR(100),
+    bio                   TEXT,
+    avatar_url            TEXT,
+    background_url        TEXT,
+    website_url           TEXT,
+    location              VARCHAR(100),
+    birth_date            DATE,
+    is_verified           BOOLEAN     NOT NULL DEFAULT FALSE,
+    is_private            BOOLEAN     NOT NULL DEFAULT FALSE,
+    role                  VARCHAR(20) NOT NULL DEFAULT 'USER',
+    follower_count        INT         NOT NULL DEFAULT 0,
+    following_count       INT         NOT NULL DEFAULT 0,
+    post_count            INT         NOT NULL DEFAULT 0,
+    status                VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+    theme_settings        JSONB,
+    notification_settings JSONB,
+    account_settings      JSONB,
+    created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at            TIMESTAMPTZ,
+    created_by            UUID,
+    updated_by            UUID,
+    is_deleted            BOOLEAN     NOT NULL DEFAULT FALSE,
+    deleted_at            TIMESTAMPTZ,
+    deleted_by            UUID
+);
+CREATE INDEX IF NOT EXISTS idx_users_username    ON users(username)    WHERE is_deleted = false;
+CREATE INDEX IF NOT EXISTS idx_users_keycloak_id ON users(keycloak_id) WHERE is_deleted = false;

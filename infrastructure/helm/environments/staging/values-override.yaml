@@ -1,0 +1,30 @@
+sssm-services:
+  global:
+    registry: "123456789.dkr.ecr.us-east-1.amazonaws.com/sssm"
+    env: staging
+    tracing:
+      sampleRate: "0.5"
+
+  user-service:
+    replicaCount: 2
+    autoscaling:
+      minReplicas: 2
+      maxReplicas: 8
+
+  post-service:
+    replicaCount: 2
+
+  post-guard-service:
+    replicaCount: 2
+    resources:
+      requests: { cpu: 500m, memory: 2Gi }
+      limits:   { cpu: 2,    memory: 4Gi }
+
+ingress:
+  aws-load-balancer-controller:
+    clusterName: sssm-staging
+
+platform:
+  cluster-autoscaler:
+    autoDiscovery:
+      clusterName: sssm-staging

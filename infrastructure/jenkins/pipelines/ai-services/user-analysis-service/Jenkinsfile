@@ -1,0 +1,10 @@
+// Jenkinsfile — user-analysis-service
+// Calls the shared fastApiPipeline step.
+
+@Library('sssm-shared-library') _
+
+fastApiPipeline(
+    serviceName: 'user-analysis-service',
+    servicePort:  8092,
+    serviceDir:  'python-services/user-analysis-service'
+)

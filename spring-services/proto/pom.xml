@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.lvoxx</groupId>
+        <artifactId>spring-services</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>io.github.lvoxx</groupId>
+    <artifactId>proto</artifactId>
+    <version>1.0.0</version>
+    <name>proto</name>
+    <description>Protobuf definitions and generated stubs for all gRPC services</description>
+
+    <dependencies>
+        <!-- Spring WebFlux starter for reactive modules support -->
+        <dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+        <!-- Runtime deps used by generated code -->
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <!-- reactor-grpc-stub: runtime base classes for Reactor*Grpc generated stubs -->
+        <dependency>
+            <groupId>com.salesforce.servicelibs</groupId>
+            <artifactId>reactor-grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!--
+                io.github.ascopes:protobuf-maven-plugin replaces xolstice 0.6.1.
+                Key advantages:
+                  - No os-maven-plugin extension needed (OS detection is built-in)
+                  - JVM plugins (mainClass) use proper subprocess stdin/stdout forwarding
+                    that works reliably on Windows, unlike xolstice's .bat wrapper approach
+                  - Single 'generate' goal handles messages + all plugins in one pass
+            -->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>5.0.2</version>
+                <configuration>
+                    <!-- Required: version to download from Maven Central (com.google.protobuf:protoc) -->
+                    <protoc>3.25.5</protoc>
+                    <!-- Plugin defaults to src/main/protobuf; our protos live in src/main/proto -->
+                    <sourceDirectories>
+                        <sourceDirectory>${project.basedir}/src/main/proto</sourceDirectory>
+                    </sourceDirectories>
+                    <plugins>
+                        <!-- grpc-java: native OS executable → generates *Grpc.java stubs -->
+                        <plugin kind="binary-maven">
+                            <groupId>io.grpc</groupId>
+                            <artifactId>protoc-gen-grpc-java</artifactId>
+                            <version>${grpc.version}</version>
+                        </plugin>
+                        <!-- reactor-grpc: JVM plugin → generates Reactor*Grpc.java reactive stubs -->
+                        <plugin kind="jvm-maven">
+                            <groupId>com.salesforce.servicelibs</groupId>
+                            <artifactId>reactor-grpc</artifactId>
+                            <version>${reactor-grpc.version}</version>
+                            <mainClass>com.salesforce.reactorgrpc.ReactorGrpcGenerator</mainClass>
+                        </plugin>
+                    </plugins>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <!-- Generates all sources: messages + grpc-java stubs + reactor stubs -->
+                            <goal>generate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

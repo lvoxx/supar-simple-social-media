@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name:      sssm
+  namespace: argocd
+spec:
+  description: SSSM Social Platform workloads
+
+  sourceRepos:
+    - https://github.com/lvoxx/supar-simple-social-media-SpringBoot.git
+
+  destinations:
+    - namespace: sssm
+      server:    https://kubernetes.default.svc
+    - namespace: sssm-infra
+      server:    https://kubernetes.default.svc
+
+  clusterResourceWhitelist:
+    - group: ""
+      kind:  Namespace
+
+  namespaceResourceWhitelist:
+    - { group: apps,                   kind: Deployment      }
+    - { group: apps,                   kind: StatefulSet     }
+    - { group: autoscaling,            kind: HorizontalPodAutoscaler }
+    - { group: policy,                 kind: PodDisruptionBudget }
+    - { group: batch,                  kind: Job             }
+    - { group: "",                     kind: Service         }
+    - { group: "",                     kind: ServiceAccount  }
+    - { group: "",                     kind: ConfigMap       }
+    - { group: external-secrets.io,    kind: ExternalSecret  }
+
+  roles:
+    - name: developer
+      description: Read-only access for developers
+      policies:
+        - p, proj:sssm:developer, applications, get, sssm/*, allow
+      groups:
+        - sssm-developers
+    - name: release-manager
+      description: Can sync applications
+      policies:
+        - p, proj:sssm:release-manager, applications, sync, sssm/*, allow
+      groups:
+        - sssm-platform-team

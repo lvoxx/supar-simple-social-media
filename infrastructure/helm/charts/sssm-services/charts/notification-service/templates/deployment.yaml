@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-service
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app: notification-service
+    helm.sh/chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: notification-service
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: notification-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path:   "{{ .Values.global.metrics.path }}"
+        prometheus.io/port:   "{{ .Values.service.port }}"
+    spec:
+      serviceAccountName: notification-service
+      nodeSelector: {{ .Values.global.nodeSelector | toYaml | nindent 8 }}
+      tolerations: {{ .Values.global.tolerations | toYaml | nindent 8 }}
+      affinity: {{ .Values.affinity | toYaml | nindent 8 }}
+      terminationGracePeriodSeconds: 60
+      containers:
+        - name: notification-service
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+            {{- range $k, $v := .Values.env }}
+            - name:  {{ $k }}
+              value: {{ $v | quote }}
+            {{- end }}
+            - name:  ZIPKIN_ENDPOINT
+              value: {{ .Values.global.tracing.zipkinEndpoint }}
+          envFrom:
+            - secretRef:
+                name: {{ .Values.externalSecrets[0].secretName }}
+          resources: {{ .Values.resources | toYaml | nindent 12 }}
+          livenessProbe:  {{ .Values.livenessProbe  | toYaml | nindent 12 }}
+          readinessProbe: {{ .Values.readinessProbe | toYaml | nindent 12 }}
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/bin/sh", "-c", "sleep 5"]

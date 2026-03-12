@@ -1,0 +1,7 @@
+sssm:
+  websocket:
+    allowed-origins: ${WS_ALLOWED_ORIGINS:*}
+    heartbeat-interval: 25s
+    connection-timeout: 60s
+    max-text-message-size: 65536
+    max-binary-message-size: 65536

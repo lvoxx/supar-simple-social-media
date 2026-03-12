@@ -1,0 +1,17 @@
+{
+  "namespace": "io.github.lvoxx.group",
+  "type": "record",
+  "name": "GroupCreatedEvent",
+  "doc": "Published when a new social group is created.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "group.created"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "group-service"},
+    {"name": "groupId",         "type": "string"},
+    {"name": "name",            "type": "string"},
+    {"name": "ownerId",         "type": "string"},
+    {"name": "visibility",      "type": "string"}
+  ]
+}

@@ -1,0 +1,22 @@
+version: '3.8'
+services:
+  cassandra:
+    image: cassandra:${CASSANDRA_VERSION:-latest}
+    container_name: cassandra-container
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_USER=${CASSANDRA_USER:-admin}
+      - CASSANDRA_PASSWORD=${CASSANDRA_PASSWORD:-Sup3rS3cr3t!}
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    restart: on-failure
+    healthcheck:
+      test: [ "CMD-SHELL", "nodetool status" ]
+      interval: 2m
+      start_period: 2m
+      timeout: 10s
+      retries: 3
+
+volumes:
+  cassandra_data:

@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: private-message-service-cql-migrations
+  namespace: sssm
+data:
+  V1__init_messages.cql: |
+    CREATE KEYSPACE IF NOT EXISTS sssm_messages
+        WITH replication = {'class': 'NetworkTopologyStrategy', 'datacenter1': 3}
+        AND durable_writes = true;
+    
+    USE sssm_messages;
+    
+    CREATE TABLE IF NOT EXISTS conversations (
+        conversation_id UUID       PRIMARY KEY,
+        type            TEXT,
+        name            TEXT,
+        avatar_url      TEXT,
+        group_id        UUID,
+        created_by      UUID,
+        created_at      TIMESTAMP,
+        updated_at      TIMESTAMP,
+        settings        TEXT,
+        is_deleted      BOOLEAN DEFAULT FALSE
+    );
+
+    CREATE TABLE IF NOT EXISTS conversation_participants (
+        conversation_id       UUID,
+        user_id               UUID,
+        role                  TEXT DEFAULT 'MEMBER',
+        status                TEXT DEFAULT 'ACTIVE',
+        joined_at             TIMESTAMP,
+        last_read_message_id  UUID,
+        last_read_at          TIMESTAMP,
+        notification_settings TEXT,
+        PRIMARY KEY (conversation_id, user_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS ON conversation_participants (user_id);
+
+    CREATE TABLE IF NOT EXISTS conversations_by_user (
+        user_id           UUID,
+        last_message_at   TIMESTAMP,
+        conversation_id   UUID,
+        conversation_type TEXT,
+        unread_count      INT,
+        is_muted          BOOLEAN,
+        PRIMARY KEY (user_id, last_message_at, conversation_id)
+    ) WITH CLUSTERING ORDER BY (last_message_at DESC, conversation_id ASC);
+
+    CREATE TABLE IF NOT EXISTS messages (
+        conversation_id                UUID,
+        message_id                     TIMEUUID,
+        sender_id                      UUID,
+        message_type                   TEXT,
+        content                        TEXT,
+        media_ids                      LIST<UUID>,
+        forwarded_from_message_id      UUID,
+        forwarded_from_conversation_id UUID,
+        reply_to_message_id            UUID,
+        status                         TEXT,
+        is_deleted                     BOOLEAN DEFAULT FALSE,
+        deleted_at                     TIMESTAMP,
+        deleted_by                     UUID,
+        edited_at                      TIMESTAMP,
+        metadata                       TEXT,
+        created_at                     TIMESTAMP,
+        PRIMARY KEY (conversation_id, message_id)
+    ) WITH CLUSTERING ORDER BY (message_id DESC);
+
+    CREATE TABLE IF NOT EXISTS message_reactions (
+        conversation_id UUID,
+        message_id      TIMEUUID,
+        user_id         UUID,
+        emoji           TEXT,
+        reacted_at      TIMESTAMP,
+        PRIMARY KEY (conversation_id, message_id, user_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS message_read_receipts (
+        conversation_id UUID,
+        message_id      TIMEUUID,
+        user_id         UUID,
+        read_at         TIMESTAMP,
+        PRIMARY KEY (conversation_id, message_id, user_id)
+    );
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: private-message-service-db-init
+  namespace: sssm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 5
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: private-message-service
+      initContainers:
+        - name: wait-for-cassandra
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z $(CASSANDRA_HOST) $(CASSANDRA_PORT); do echo waiting for cassandra; sleep 5; done']
+          env:
+            - name: CASSANDRA_HOST
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_HOST }
+            - name: CASSANDRA_PORT
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_PORT }
+      containers:
+        - name: cqlsh-init
+          image: cassandra:4.1-slim
+          command: ["/bin/bash", "-c"]
+          args:
+            - |
+              echo "Running CQL migration — keyspace: sssm_messages"
+              cqlsh $(CASSANDRA_HOST) $(CASSANDRA_PORT) \
+                -u $(CASSANDRA_USERNAME) \
+                -p $(CASSANDRA_PASSWORD) \
+                --ssl \
+                -f /cql/V1__init_messages.cql
+              echo "Migration complete for keyspace: sssm_messages"
+          env:
+            - name: CASSANDRA_HOST
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_HOST }
+            - name: CASSANDRA_PORT
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_PORT }
+            - name: CASSANDRA_USERNAME
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_USERNAME }
+            - name: CASSANDRA_PASSWORD
+              valueFrom:
+                secretKeyRef: { name: private-message-service-secrets, key: CASSANDRA_PASSWORD }
+          volumeMounts:
+            - name: cql-scripts
+              mountPath: /cql
+      volumes:
+        - name: cql-scripts
+          configMap:
+            name: private-message-service-cql-migrations

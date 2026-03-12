@@ -1,0 +1,131 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-service-migrations
+  namespace: sssm
+data:
+  V1__init_users.sql: |
+    CREATE TABLE IF NOT EXISTS users (
+        id                    UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        keycloak_id           UUID        UNIQUE NOT NULL,
+        username              VARCHAR(50) UNIQUE NOT NULL,
+        display_name          VARCHAR(100),
+        bio                   TEXT,
+        avatar_url            TEXT,
+        background_url        TEXT,
+        website_url           TEXT,
+        location              VARCHAR(100),
+        birth_date            DATE,
+        is_verified           BOOLEAN     NOT NULL DEFAULT FALSE,
+        is_private            BOOLEAN     NOT NULL DEFAULT FALSE,
+        role                  VARCHAR(20) NOT NULL DEFAULT 'USER',
+        follower_count        INT         NOT NULL DEFAULT 0,
+        following_count       INT         NOT NULL DEFAULT 0,
+        post_count            INT         NOT NULL DEFAULT 0,
+        status                VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+        theme_settings        JSONB,
+        notification_settings JSONB,
+        account_settings      JSONB,
+        created_at            TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at            TIMESTAMPTZ,
+        created_by            UUID,
+        updated_by            UUID,
+        is_deleted            BOOLEAN     NOT NULL DEFAULT FALSE,
+        deleted_at            TIMESTAMPTZ,
+        deleted_by            UUID
+    );
+    CREATE INDEX IF NOT EXISTS idx_users_username    ON users(username)    WHERE is_deleted = false;
+    CREATE INDEX IF NOT EXISTS idx_users_keycloak_id ON users(keycloak_id) WHERE is_deleted = false;
+  V2__add_followers.sql: |
+    CREATE TABLE IF NOT EXISTS followers (
+        follower_id   UUID        NOT NULL,
+        following_id  UUID        NOT NULL,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (follower_id, following_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_followers_following_id ON followers(following_id);
+  V3__add_verifications.sql: |
+    CREATE TABLE IF NOT EXISTS verifications (
+        id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id       UUID        NOT NULL,
+        type          VARCHAR(30),
+        status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        document_url  TEXT,
+        reviewed_by   UUID,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at    TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS idx_verifications_user_id ON verifications(user_id);
+  V4__add_account_history.sql: |
+    CREATE TABLE IF NOT EXISTS account_history (
+        id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID        NOT NULL,
+        action      VARCHAR(50) NOT NULL,
+        detail      JSONB,
+        ip          INET,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_account_history_user_id ON account_history(user_id);
+  V5__add_follow_requests.sql: |
+    CREATE TABLE IF NOT EXISTS follow_requests (
+        id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        requester_id  UUID        NOT NULL,
+        target_id     UUID        NOT NULL,
+        status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_follow_req_unique ON follow_requests(requester_id, target_id) WHERE status = 'PENDING';
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: user-service-db-init
+  namespace: sssm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: user-service
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z $(DB_HOST) $(DB_PORT); do echo waiting for postgres; sleep 3; done']
+          envFrom:
+            - secretRef:
+                name: user-service-secrets
+      containers:
+        - name: flyway
+          image: flyway/flyway:10-alpine
+          args: [migrate, -outOfOrder=false, -validateOnMigrate=true]
+          env:
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql:$(DB_HOST):$(DB_PORT)/sssm_users"
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: DB_USER
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: user-service-secrets
+                  key: DB_PASSWORD
+            - name: FLYWAY_LOCATIONS
+              value: "filesystem:/flyway/sql"
+            - name: FLYWAY_BASELINE_ON_MIGRATE
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: user-service-secrets
+          volumeMounts:
+            - name: migrations
+              mountPath: /flyway/sql
+      volumes:
+        - name: migrations
+          configMap:
+            name: user-service-migrations

@@ -1,0 +1,44 @@
+server:
+  port: 8081
+  
+spring:
+  application:
+    name: user-service
+  # r2dbc pool size/validation-query     → postgres-starter application-postgres.yaml
+  # kafka bootstrap-servers / serializers → kafka-starter application-kafka.yaml
+  # redis host/port, redisson config      → redis-starter application-redis.yaml
+  # Only override values that differ from starter defaults:
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sssm_users}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+# sssm.security anonymous-paths base set → security-starter application-security.yaml
+# Add service-specific public paths here:
+grpc:
+  server:
+    port: 9090
+
+sssm:
+  security:
+    anonymous-paths:
+      - /actuator/**
+      - /v3/api-docs/**
+      - /swagger-ui/**
+  rate-limit:
+    enabled: true
+    default-capacity: 100
+    default-refill-period: 1m
+    rules:
+      - path: /api/v1/users/*/follow
+        method: POST
+        capacity: 50
+        refill-period: 1h
+      - path: /api/v1/users/me
+        method: PUT
+        capacity: 10
+        refill-period: 1m
+      - path: /api/v1/users/me/verify
+        method: POST
+        capacity: 3
+        refill-period: 1d

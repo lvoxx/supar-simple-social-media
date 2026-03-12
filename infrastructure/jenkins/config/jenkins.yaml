@@ -1,0 +1,103 @@
+# infrastructure/jenkins/config/jenkins.yaml
+# Jenkins Configuration-as-Code (JCasC)
+# Apply via: Jenkins → Manage Jenkins → Configuration as Code → Apply
+# Requires: Configuration as Code Plugin
+
+jenkins:
+  systemMessage: "SSSM Social Platform CI — managed by JCasC"
+  numExecutors: 0   # no builds on controller; all on agents
+
+  globalLibraries:
+    libraries:
+      - name:           sssm-shared-library
+        defaultVersion: main
+        implicit:       false
+        allowVersionOverride: true
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                remote:        https://github.com/lvoxx/supar-simple-social-media-SpringBoot.git
+                credentialsId: github-credentials
+                traits:
+                  - gitBranchDiscovery
+            libraryPath: infrastructure/jenkins/shared-library
+
+  globalNodeProperties:
+    - envVars:
+        env:
+          - key:   ECR_REGISTRY
+            value: "123456789.dkr.ecr.us-east-1.amazonaws.com"
+          - key:   AWS_DEFAULT_REGION
+            value: us-east-1
+          - key:   MAVEN_OPTS
+            value: "-Xmx1024m -XX:MaxMetaspaceSize=512m"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          - usernamePassword:
+              scope:    GLOBAL
+              id:       github-credentials
+              username: jenkins-bot
+              password: "${GITHUB_TOKEN}"    # injected from K8S secret
+              description: GitHub credentials for SCM checkout and GitOps push
+
+          - string:
+              scope:       GLOBAL
+              id:          sonar-token
+              secret:      "${SONAR_TOKEN}"
+              description: SonarQube analysis token
+
+          - string:
+              scope:       GLOBAL
+              id:          slack-token
+              secret:      "${SLACK_TOKEN}"
+              description: Slack bot token for pipeline notifications
+
+          - aws:
+              scope:       GLOBAL
+              id:          aws-prod-credentials
+              accessKey:   "${AWS_PROD_ACCESS_KEY_ID}"
+              secretKey:   "${AWS_PROD_SECRET_ACCESS_KEY}"
+              description: AWS credentials for prod environment
+
+          - aws:
+              scope:       GLOBAL
+              id:          aws-dev-credentials
+              accessKey:   "${AWS_DEV_ACCESS_KEY_ID}"
+              secretKey:   "${AWS_DEV_SECRET_ACCESS_KEY}"
+              description: AWS credentials for dev environment
+
+tool:
+  maven:
+    installations:
+      - name: maven-3.9
+        home: /usr/share/maven
+  jdk:
+    installations:
+      - name: java-25
+        home: /usr/lib/jvm/java-25-openjdk
+
+unclassified:
+  sonarGlobalConfiguration:
+    installations:
+      - name:           SonarQube
+        serverUrl:      http://sonarqube.monitoring.svc.cluster.local:9000
+        credentialsId:  sonar-token
+        triggers:
+          skipScmCause:     false
+          skipUpstreamCause: false
+
+  slackNotifier:
+    teamDomain:   your-workspace
+    tokenCredentialId: slack-token
+    room:         "#ci-cd"
+
+  githubPluginConfig:
+    configs:
+      - name:          GitHub
+        apiUrl:        https://api.github.com
+        credentialsId: github-credentials
+        manageHooks:   true

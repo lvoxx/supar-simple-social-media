@@ -1,0 +1,83 @@
+sssm-services:
+  global:
+    registry: "123456789.dkr.ecr.us-east-1.amazonaws.com/sssm"
+    env: dev
+    tracing:
+      sampleRate: "1.0"   # 100% sampling in dev
+    resources:
+      requests: { cpu: 100m, memory: 256Mi }
+      limits:   { cpu: 500m, memory: 512Mi }
+
+  user-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  media-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  post-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  comment-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  notification-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  search-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  group-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  private-message-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  message-notification-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  post-guard-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  media-guard-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  user-analysis-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+  ai-dashboard-service:
+    replicaCount: 1
+    autoscaling: { enabled: false }
+
+sssm-infra:
+  cassandra:
+    replicaCount: 1
+    persistence: { size: 10Gi }
+    resources:
+      requests: { cpu: "500m", memory: 2Gi }
+      limits:   { cpu: "1",    memory: 4Gi }
+  qdrant:
+    replicaCount: 1
+  minio:
+    mode: standalone
+    replicas: 1
+
+ingress:
+  aws-load-balancer-controller:
+    clusterName: sssm-dev
+
+platform:
+  cluster-autoscaler:
+    autoDiscovery:
+      clusterName: sssm-dev

@@ -1,0 +1,19 @@
+{
+  "namespace": "io.github.lvoxx.comment",
+  "type": "record",
+  "name": "CommentCreatedEvent",
+  "doc": "Published when a new comment or reply is created.",
+  "fields": [
+    {"name": "eventId",           "type": "string"},
+    {"name": "eventType",         "type": "string", "default": "comment.created"},
+    {"name": "version",           "type": "string", "default": "1"},
+    {"name": "timestamp",         "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService",   "type": "string", "default": "comment-service"},
+    {"name": "commentId",         "type": "string"},
+    {"name": "postId",            "type": "string"},
+    {"name": "authorId",          "type": "string"},
+    {"name": "parentCommentId",   "type": ["null", "string"], "default": null},
+    {"name": "postAuthorId",      "type": ["null", "string"], "default": null, "doc": "For notification routing."},
+    {"name": "depth",             "type": "int", "default": 0}
+  ]
+}

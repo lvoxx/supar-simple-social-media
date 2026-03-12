@@ -1,0 +1,15 @@
+{
+  "namespace": "io.github.lvoxx.user",
+  "type": "record",
+  "name": "UserAvatarChangedEvent",
+  "doc": "Published when a user changes their avatar image.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "user.avatar.changed"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "user-service"},
+    {"name": "userId",          "type": "string"},
+    {"name": "avatarUrl",       "type": "string", "doc": "New CDN URL of the avatar."}
+  ]
+}

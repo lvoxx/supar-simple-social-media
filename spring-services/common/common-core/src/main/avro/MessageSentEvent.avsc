@@ -1,0 +1,19 @@
+{
+  "namespace": "io.github.lvoxx.message",
+  "type": "record",
+  "name": "MessageSentEvent",
+  "doc": "Published when a private message is sent. Consumed by message-notification-service for offline push delivery.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "message.sent"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "private-message-service"},
+    {"name": "conversationId",  "type": "string"},
+    {"name": "messageId",       "type": "string"},
+    {"name": "senderId",        "type": "string"},
+    {"name": "messageType",     "type": "string", "doc": "TEXT | IMAGE | VIDEO | AUDIO | FILE | STICKER | FORWARDED | SYSTEM"},
+    {"name": "contentPreview",  "type": ["null", "string"], "default": null, "doc": "First 80 chars for notification preview."},
+    {"name": "conversationType","type": "string", "doc": "DIRECT | GROUP_CHAT | GROUP_CHANNEL"}
+  ]
+}

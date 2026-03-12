@@ -1,0 +1,69 @@
+---
+- name: Bootstrap EKS cluster — runs once after terraform apply
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  vars_files:
+    - "inventories/{{ env }}/group_vars/all.yaml"
+
+  tasks:
+    - name: Update kubeconfig
+      command: >
+        aws eks update-kubeconfig
+          --region {{ aws_region }}
+          --name {{ cluster_name }}
+          --profile {{ aws_profile }}
+
+    - name: Add Helm repositories
+      kubernetes.core.helm_repository:
+        name: "{{ item.name }}"
+        repo_url: "{{ item.url }}"
+      loop:
+        - { name: argo,                url: "https://argoproj.github.io/argo-helm" }
+        - { name: prometheus-community, url: "https://prometheus-community.github.io/helm-charts" }
+        - { name: cert-manager,        url: "https://charts.jetstack.io" }
+        - { name: external-secrets,    url: "https://charts.external-secrets.io" }
+        - { name: aws-load-balancer,   url: "https://aws.github.io/eks-charts" }
+        - { name: bitnami,             url: "https://charts.bitnami.com/bitnami" }
+
+    - name: Create application namespaces
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Namespace
+          metadata:
+            name: "{{ item }}"
+            labels:
+              env: "{{ env }}"
+      loop:
+        - sssm
+        - sssm-infra
+        - monitoring
+        - argocd
+        - external-secrets
+
+    - name: Create Secrets Manager ExternalSecret ClusterSecretStore
+      kubernetes.core.k8s:
+        state: present
+        src: "{{ playbook_dir }}/files/external-secret-store.yaml"
+
+    - name: Install ArgoCD via Helm
+      kubernetes.core.helm:
+        name:              argocd
+        chart_ref:         argo/argo-cd
+        release_namespace: argocd
+        values_files:
+          - "{{ playbook_dir }}/../helm/charts/platform/argocd-values.yaml"
+        wait: true
+
+    - name: Apply ArgoCD SSSM Project
+      kubernetes.core.k8s:
+        state: present
+        src:   "{{ playbook_dir }}/../argocd/bootstrap/sssm-project.yaml"
+
+    - name: Apply ArgoCD App-of-Apps
+      kubernetes.core.k8s:
+        state: present
+        src:   "{{ playbook_dir }}/../argocd/bootstrap/app-of-apps.yaml"

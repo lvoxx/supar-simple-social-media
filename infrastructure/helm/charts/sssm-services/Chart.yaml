@@ -1,0 +1,72 @@
+apiVersion: v2
+name: sssm-services
+description: SSSM Social Platform — all application microservices
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+
+dependencies:
+  - name: user-service
+    version: "1.0.0"
+    repository: "file://charts/user-service"
+    condition: userService.enabled
+
+  - name: media-service
+    version: "1.0.0"
+    repository: "file://charts/media-service"
+    condition: mediaService.enabled
+
+  - name: post-service
+    version: "1.0.0"
+    repository: "file://charts/post-service"
+    condition: postService.enabled
+
+  - name: comment-service
+    version: "1.0.0"
+    repository: "file://charts/comment-service"
+    condition: commentService.enabled
+
+  - name: notification-service
+    version: "1.0.0"
+    repository: "file://charts/notification-service"
+    condition: notificationService.enabled
+
+  - name: search-service
+    version: "1.0.0"
+    repository: "file://charts/search-service"
+    condition: searchService.enabled
+
+  - name: group-service
+    version: "1.0.0"
+    repository: "file://charts/group-service"
+    condition: groupService.enabled
+
+  - name: private-message-service
+    version: "1.0.0"
+    repository: "file://charts/private-message-service"
+    condition: privateMessageService.enabled
+
+  - name: message-notification-service
+    version: "1.0.0"
+    repository: "file://charts/message-notification-service"
+    condition: messageNotificationService.enabled
+
+  - name: post-guard-service
+    version: "1.0.0"
+    repository: "file://charts/post-guard-service"
+    condition: postGuardService.enabled
+
+  - name: media-guard-service
+    version: "1.0.0"
+    repository: "file://charts/media-guard-service"
+    condition: mediaGuardService.enabled
+
+  - name: user-analysis-service
+    version: "1.0.0"
+    repository: "file://charts/user-analysis-service"
+    condition: userAnalysisService.enabled
+
+  - name: ai-dashboard-service
+    version: "1.0.0"
+    repository: "file://charts/ai-dashboard-service"
+    condition: aiDashboardService.enabled

@@ -1,0 +1,21 @@
+plugin: amazon.aws.aws_ec2
+
+regions:
+  - us-east-1
+
+filters:
+  tag:Project: sssm
+  tag:Env:     dev
+  instance-state-name: running
+
+keyed_groups:
+  - key:  tags.NodeGroup
+    prefix: node_group
+  - key:  placement.availability_zone
+    prefix: az
+
+hostnames:
+  - private-ip-address
+
+compose:
+  ansible_host: private_ip_address

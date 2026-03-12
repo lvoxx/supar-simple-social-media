@@ -1,0 +1,14 @@
+{
+  "namespace": "io.github.lvoxx",
+  "type": "record",
+  "name": "EventEnvelope",
+  "doc": "Common envelope wrapping all domain events published to Kafka.",
+  "fields": [
+    {"name": "eventId",         "type": "string", "doc": "ULID-based unique event identifier."},
+    {"name": "eventType",       "type": "string", "doc": "Dot-separated event type, e.g. user.profile.updated."},
+    {"name": "version",         "type": "string", "default": "1", "doc": "Schema version string."},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}, "doc": "Event creation time (epoch ms)."},
+    {"name": "producerService", "type": "string", "doc": "Name of the service that published this event."},
+    {"name": "payload",         "type": "string", "doc": "JSON-encoded payload. Service-specific schemas validate the payload per eventType."}
+  ]
+}

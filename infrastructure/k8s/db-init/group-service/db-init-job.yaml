@@ -1,0 +1,173 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: group-service-migrations
+  namespace: sssm
+data:
+  V1__init_groups.sql: |
+    CREATE TABLE IF NOT EXISTS groups (
+        id             UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+        slug           VARCHAR(100) UNIQUE NOT NULL,
+        name           VARCHAR(150) NOT NULL,
+        description    TEXT,
+        avatar_url     TEXT,
+        background_url TEXT,
+        visibility     VARCHAR(20)  NOT NULL DEFAULT 'PUBLIC',
+        status         VARCHAR(20)  NOT NULL DEFAULT 'ACTIVE',
+        owner_id       UUID         NOT NULL,
+        member_count   INT          NOT NULL DEFAULT 0,
+        post_count     INT          NOT NULL DEFAULT 0,
+        tags           TEXT[],
+        category       VARCHAR(60),
+        rules          JSONB,
+        policy         JSONB,
+        settings       JSONB,
+        created_at     TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+        updated_at     TIMESTAMPTZ,
+        created_by     UUID,
+        updated_by     UUID,
+        is_deleted     BOOLEAN      NOT NULL DEFAULT FALSE,
+        deleted_at     TIMESTAMPTZ,
+        deleted_by     UUID
+    );
+    CREATE INDEX IF NOT EXISTS idx_groups_slug       ON groups(slug)       WHERE is_deleted = false;
+    CREATE INDEX IF NOT EXISTS idx_groups_owner_id   ON groups(owner_id)   WHERE is_deleted = false;
+    CREATE INDEX IF NOT EXISTS idx_groups_visibility ON groups(visibility)  WHERE is_deleted = false;
+    CREATE INDEX IF NOT EXISTS idx_groups_category   ON groups(category)   WHERE is_deleted = false;
+
+    CREATE TABLE IF NOT EXISTS group_members (
+        group_id     UUID        NOT NULL,
+        user_id      UUID        NOT NULL,
+        role         VARCHAR(20) NOT NULL DEFAULT 'MEMBER',
+        status       VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+        join_answers JSONB,
+        invited_by   UUID,
+        banned_by    UUID,
+        ban_reason   TEXT,
+        banned_at    TIMESTAMPTZ,
+        joined_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at   TIMESTAMPTZ,
+        PRIMARY KEY (group_id, user_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_group_members_user ON group_members(user_id, status);
+    CREATE INDEX IF NOT EXISTS idx_group_members_role ON group_members(group_id, role);
+  V2__add_join_questions.sql: |
+    CREATE TABLE IF NOT EXISTS group_join_questions (
+        id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id     UUID        NOT NULL,
+        question     TEXT        NOT NULL,
+        order_index  INT         NOT NULL,
+        is_required  BOOLEAN     NOT NULL DEFAULT TRUE,
+        created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_join_questions_group ON group_join_questions(group_id);
+
+    CREATE TABLE IF NOT EXISTS group_join_requests (
+        id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id      UUID        NOT NULL,
+        requester_id  UUID        NOT NULL,
+        answers       JSONB,
+        status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        reviewed_by   UUID,
+        reviewed_at   TIMESTAMPTZ,
+        reject_reason TEXT,
+        created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_join_requests_group     ON group_join_requests(group_id, status);
+    CREATE INDEX IF NOT EXISTS idx_join_requests_requester ON group_join_requests(requester_id, status);
+  V3__add_invitations.sql: |
+    CREATE TABLE IF NOT EXISTS group_invitations (
+        id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id    UUID        NOT NULL,
+        inviter_id  UUID        NOT NULL,
+        invitee_id  UUID        NOT NULL,
+        status      VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+        expires_at  TIMESTAMPTZ,
+        created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_invitations_invitee ON group_invitations(invitee_id, status);
+    CREATE INDEX IF NOT EXISTS idx_invitations_group   ON group_invitations(group_id, status);
+  V4__add_activity_log.sql: |
+    CREATE TABLE IF NOT EXISTS group_member_activity (
+        id         UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+        group_id   UUID        NOT NULL,
+        actor_id   UUID        NOT NULL,
+        target_id  UUID,
+        action     VARCHAR(50) NOT NULL,
+        detail     JSONB,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+    CREATE INDEX IF NOT EXISTS idx_group_activity_group ON group_member_activity(group_id, created_at DESC);
+  V5__add_post_associations.sql: |
+    CREATE TABLE IF NOT EXISTS group_pinned_posts (
+        group_id    UUID        NOT NULL,
+        post_id     UUID        NOT NULL,
+        pinned_by   UUID        NOT NULL,
+        order_index INT         NOT NULL DEFAULT 0,
+        pinned_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (group_id, post_id)
+    );
+
+    CREATE TABLE IF NOT EXISTS group_post_associations (
+        group_id   UUID        NOT NULL,
+        post_id    UUID        NOT NULL,
+        posted_by  UUID        NOT NULL,
+        status     VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (group_id, post_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_group_posts_group ON group_post_associations(group_id, status, created_at DESC);
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: group-service-db-init
+  namespace: sssm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: group-service
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z $(DB_HOST) $(DB_PORT); do echo waiting for postgres; sleep 3; done']
+          envFrom:
+            - secretRef:
+                name: group-service-secrets
+      containers:
+        - name: flyway
+          image: flyway/flyway:10-alpine
+          args: [migrate, -outOfOrder=false, -validateOnMigrate=true]
+          env:
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql:$(DB_HOST):$(DB_PORT)/sssm_groups"
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: group-service-secrets
+                  key: DB_USER
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: group-service-secrets
+                  key: DB_PASSWORD
+            - name: FLYWAY_LOCATIONS
+              value: "filesystem:/flyway/sql"
+            - name: FLYWAY_BASELINE_ON_MIGRATE
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: group-service-secrets
+          volumeMounts:
+            - name: migrations
+              mountPath: /flyway/sql
+      volumes:
+        - name: migrations
+          configMap:
+            name: group-service-migrations

@@ -1,0 +1,17 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: media-service
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sssm_media}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}
+
+aws:
+  s3:
+    bucket: ${AWS_S3_BUCKET:sssm-media}
+    region: ${AWS_REGION:us-east-1}
+    cloudfront-domain: ${AWS_CLOUDFRONT_DOMAIN:cdn.example.com}
+    default-prefix: sssm/media

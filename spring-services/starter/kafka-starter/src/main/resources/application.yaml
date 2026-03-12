@@ -1,0 +1,51 @@
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+
+      acks: all
+      retries: 2147483647
+      delivery-timeout-ms: 120000
+
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+        linger.ms: 5
+        batch.size: 32768
+        compression.type: zstd
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+
+    consumer:
+      group-id: ${spring.application.name}
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+
+      properties:
+        schema.registry.url: ${SCHEMA_REGISTRY_URL:http://localhost:8081}
+        specific.avro.reader: true
+        isolation.level: read_committed
+        max.poll.records: 500
+        fetch.min.bytes: 1
+        fetch.max.wait.ms: 500
+
+    listener:
+      ack-mode: MANUAL
+      concurrency: ${KAFKA_LISTENER_CONCURRENCY:3}
+      type: single
+
+sssm:
+  kafka:
+    retry:
+      max-attempts: 3
+      initial-interval: 200
+      backoff-multiplier: 2.0
+      max-interval: 10s
+    dlt:
+      enabled: true
+      suffix: .DLT

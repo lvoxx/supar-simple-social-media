@@ -1,0 +1,10 @@
+// Jenkinsfile — comment-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'comment-service',
+    servicePort:  8084
+)

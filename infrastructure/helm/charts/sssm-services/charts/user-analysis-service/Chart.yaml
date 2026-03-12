@@ -1,0 +1,6 @@
+apiVersion: v2
+name: user-analysis-service
+description: SSSM user-analysis-service
+type: application
+version: 1.0.0
+appVersion: "1.0.0"

@@ -1,0 +1,17 @@
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+      max-acquire-time: 5s
+      validation-query: SELECT 1
+
+sssm:
+  postgres:
+    auditor-enabled: true
+    user-id-header: X-User-Id
+    query-timeout: 10s

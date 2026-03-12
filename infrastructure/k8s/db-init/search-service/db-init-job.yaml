@@ -1,0 +1,147 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: search-service-os-mappings
+  namespace: sssm
+data:
+  posts_v1.json: |
+    {
+      "settings": {
+        "number_of_shards": 3,
+        "number_of_replicas": 1,
+        "refresh_interval": "1s",
+        "analysis": {
+          "analyzer": {
+            "content_analyzer": {
+              "type": "standard",
+              "stopwords": "_english_"
+            }
+          }
+        }
+      },
+      "mappings": {
+        "properties": {
+          "id":              { "type": "keyword" },
+          "content":         { "type": "text", "analyzer": "content_analyzer" },
+          "authorId":        { "type": "keyword" },
+          "authorUsername":  { "type": "keyword" },
+          "groupId":         { "type": "keyword" },
+          "hashtags":        { "type": "keyword" },
+          "mentionedUserIds":{ "type": "keyword" },
+          "likeCount":       { "type": "integer" },
+          "repostCount":     { "type": "integer" },
+          "isDeleted":       { "type": "boolean" },
+          "createdAt":       { "type": "date" }
+        }
+      }
+    }
+  users_v1.json: |
+    {
+      "settings": { "number_of_shards": 2, "number_of_replicas": 1, "refresh_interval": "1s" },
+      "mappings": {
+        "properties": {
+          "id":          { "type": "keyword" },
+          "username":    { "type": "search_as_you_type" },
+          "displayName": { "type": "search_as_you_type" },
+          "bio":         { "type": "text" },
+          "avatarUrl":   { "type": "keyword", "index": false },
+          "isVerified":  { "type": "boolean" },
+          "isDeleted":   { "type": "boolean" }
+        }
+      }
+    }
+  init-indices.sh: |
+    #!/bin/sh
+    set -e
+    OS_URL="https://${OPENSEARCH_HOST}"
+    CURL="curl -sf --aws-sigv4 aws:amz:${AWS_REGION}:es --user ${AWS_ACCESS_KEY_ID}:${AWS_SECRET_ACCESS_KEY}"
+
+    echo "Creating OpenSearch index: posts_v1"
+    $CURL -X PUT "$OS_URL/posts_v1" \
+      -H "Content-Type: application/json" \
+      -d @/mappings/posts_v1.json
+    echo ""
+
+    echo "Creating alias: posts -> posts_v1"
+    $CURL -X POST "$OS_URL/_aliases" \
+      -H "Content-Type: application/json" \
+      -d '{"actions":[{"add":{"index":"posts_v1","alias":"posts"}}]}'
+    echo ""
+
+    echo "Creating OpenSearch index: users_v1"
+    $CURL -X PUT "$OS_URL/users_v1" \
+      -H "Content-Type: application/json" \
+      -d @/mappings/users_v1.json
+    echo ""
+
+    echo "Creating alias: users -> users_v1"
+    $CURL -X POST "$OS_URL/_aliases" \
+      -H "Content-Type: application/json" \
+      -d '{"actions":[{"add":{"index":"users_v1","alias":"users"}}]}'
+    echo ""
+
+    echo "Verifying indices..."
+    $CURL "$OS_URL/_cat/indices?v"
+    echo "OpenSearch init complete"
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: search-service-db-init
+  namespace: sssm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: search-service
+      initContainers:
+        - name: wait-for-opensearch
+          image: curlimages/curl:8.5.0
+          command: ['sh', '-c']
+          args:
+            - |
+              until curl -sf --aws-sigv4 aws:amz:$(AWS_REGION):es                 --user $(AWS_ACCESS_KEY_ID):$(AWS_SECRET_ACCESS_KEY)                 "https://$(OPENSEARCH_HOST)/_cluster/health?wait_for_status=yellow&timeout=30s"; do
+                echo "Waiting for OpenSearch to be ready..."
+                sleep 10
+              done
+          env:
+            - name: OPENSEARCH_HOST
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: OPENSEARCH_HOST }
+            - name: AWS_REGION
+              value: us-east-1
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: AWS_ACCESS_KEY_ID }
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: AWS_SECRET_ACCESS_KEY }
+      containers:
+        - name: opensearch-init
+          image: curlimages/curl:8.5.0
+          command: ["/bin/sh", "/mappings/init-indices.sh"]
+          env:
+            - name: OPENSEARCH_HOST
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: OPENSEARCH_HOST }
+            - name: AWS_REGION
+              value: us-east-1
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: AWS_ACCESS_KEY_ID }
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef: { name: search-service-secrets, key: AWS_SECRET_ACCESS_KEY }
+          volumeMounts:
+            - name: mappings
+              mountPath: /mappings
+      volumes:
+        - name: mappings
+          configMap:
+            name: search-service-os-mappings
+            defaultMode: 0755

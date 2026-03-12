@@ -1,0 +1,18 @@
+{
+  "namespace": "io.github.lvoxx.post",
+  "type": "record",
+  "name": "PostCreatedEvent",
+  "doc": "Published when a new post is created and passes content moderation.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "post.created"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "post-service"},
+    {"name": "postId",          "type": "string"},
+    {"name": "authorId",        "type": "string"},
+    {"name": "content",         "type": ["null", "string"], "default": null},
+    {"name": "postType",        "type": "string", "doc": "ORIGINAL | REPLY | REPOST | QUOTE | AUTO"},
+    {"name": "groupId",         "type": ["null", "string"], "default": null}
+  ]
+}

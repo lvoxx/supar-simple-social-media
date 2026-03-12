@@ -1,0 +1,51 @@
+cert-manager:
+  installCRDs: true
+  replicaCount: 2
+  nodeSelector: { role: system }
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+      effect: NoSchedule
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${CERT_MANAGER_ROLE_ARN}"
+  resources:
+    requests: { cpu: 50m,  memory: 64Mi  }
+    limits:   { cpu: 200m, memory: 256Mi }
+
+external-secrets:
+  replicaCount: 2
+  nodeSelector: { role: system }
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+      effect: NoSchedule
+  serviceAccount:
+    annotations:
+      eks.amazonaws.com/role-arn: "${EXTERNAL_SECRETS_ROLE_ARN}"
+  resources:
+    requests: { cpu: 50m,  memory: 128Mi }
+    limits:   { cpu: 200m, memory: 256Mi }
+
+cluster-autoscaler:
+  autoDiscovery:
+    clusterName: sssm-prod   # overridden per environment
+  awsRegion: us-east-1
+  nodeSelector: { role: system }
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+      effect: NoSchedule
+  rbac:
+    serviceAccount:
+      annotations:
+        eks.amazonaws.com/role-arn: "${CLUSTER_AUTOSCALER_ROLE_ARN}"
+  extraArgs:
+    balance-similar-node-groups:   true
+    skip-nodes-with-system-pods:   false
+    expander:                      least-waste
+    scale-down-delay-after-add:    10m
+    scale-down-unneeded-time:      10m
+  resources:
+    requests: { cpu: 100m, memory: 256Mi }
+    limits:   { cpu: 500m, memory: 512Mi }

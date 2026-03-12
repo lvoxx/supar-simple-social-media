@@ -1,0 +1,10 @@
+// Jenkinsfile — media-guard-service
+// Calls the shared fastApiPipeline step.
+
+@Library('sssm-shared-library') _
+
+fastApiPipeline(
+    serviceName: 'media-guard-service',
+    servicePort:  8091,
+    serviceDir:  'python-services/media-guard-service'
+)

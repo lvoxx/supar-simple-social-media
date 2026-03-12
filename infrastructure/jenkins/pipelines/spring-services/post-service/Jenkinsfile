@@ -1,0 +1,10 @@
+// Jenkinsfile — post-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'post-service',
+    servicePort:  8083
+)

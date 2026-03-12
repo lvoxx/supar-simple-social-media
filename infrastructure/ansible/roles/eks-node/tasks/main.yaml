@@ -1,0 +1,27 @@
+---
+- name: Configure containerd — enable SystemdCgroup
+  template:
+    src:  containerd-config.toml.j2
+    dest: /etc/containerd/config.toml
+    mode: "0644"
+  notify: restart containerd
+
+- name: Configure kubelet extra args
+  lineinfile:
+    path:   /etc/eks/bootstrap.sh
+    regexp: "^KUBELET_EXTRA_ARGS"
+    line: >-
+      KUBELET_EXTRA_ARGS="
+        --max-pods={{ max_pods_per_node }}
+        --kube-reserved=cpu=250m,memory=1Gi,ephemeral-storage=1Gi
+        --system-reserved=cpu=250m,memory=512Mi,ephemeral-storage=1Gi
+        --eviction-hard=memory.available<200Mi,nodefs.available<10%
+        --image-gc-high-threshold=75
+        --image-gc-low-threshold=65
+      "
+
+- name: Configure log rotation for container logs
+  template:
+    src:  logrotate-containers.j2
+    dest: /etc/logrotate.d/containers
+    mode: "0644"

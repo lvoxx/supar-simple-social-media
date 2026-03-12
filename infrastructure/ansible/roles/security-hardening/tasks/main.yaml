@@ -1,0 +1,69 @@
+---
+- name: Harden SSH configuration
+  template:
+    src:  sshd_config.j2
+    dest: /etc/ssh/sshd_config
+    mode: "0600"
+  notify: restart sshd
+
+- name: Install and configure fail2ban
+  block:
+    - name: Install fail2ban
+      dnf:
+        name:  fail2ban
+        state: present
+    - name: Configure fail2ban
+      template:
+        src:  jail.local.j2
+        dest: /etc/fail2ban/jail.local
+        mode: "0644"
+    - name: Enable fail2ban
+      systemd:
+        name:    fail2ban
+        enabled: true
+        state:   started
+
+- name: Enable and configure auditd
+  block:
+    - name: Install audit
+      dnf:
+        name:  audit
+        state: present
+    - name: Configure audit rules
+      template:
+        src:  audit.rules.j2
+        dest: /etc/audit/rules.d/sssm.rules
+        mode: "0640"
+    - name: Enable auditd
+      systemd:
+        name:    auditd
+        enabled: true
+        state:   started
+
+- name: Disable unused kernel modules
+  community.general.kernel_module:
+    name:  "{{ item }}"
+    state: absent
+  loop:
+    - dccp
+    - sctp
+    - rds
+    - tipc
+
+- name: Configure firewalld — allow only required ports
+  block:
+    - name: Install firewalld
+      dnf: { name: firewalld, state: present }
+    - name: Enable firewalld
+      systemd: { name: firewalld, enabled: true, state: started }
+    - name: Open required ports
+      ansible.posix.firewalld:
+        port:      "{{ item }}/tcp"
+        permanent: true
+        state:     enabled
+        immediate: true
+      loop:
+        - "22"
+        - "10250"
+        - "10255"
+        - "30000-32767"

@@ -1,0 +1,39 @@
+global:
+  image:
+    tag: v2.11.0
+
+server:
+  replicas:      2
+  nodeSelector: { role: system }
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+      effect: NoSchedule
+  resources:
+    requests: { cpu: 250m,  memory: 512Mi }
+    limits:   { cpu: 1,     memory: 1Gi   }
+  config:
+    url: https://argocd.sssm.com
+
+repoServer:
+  replicas: 2
+  nodeSelector: { role: system }
+
+applicationSet:
+  replicaCount: 2
+  nodeSelector: { role: system }
+
+notifications:
+  enabled: true
+  nodeSelector: { role: system }
+
+dex:
+  enabled: false
+
+redis:
+  nodeSelector: { role: system }
+
+configs:
+  params:
+    server.insecure: false
+  repositories: []

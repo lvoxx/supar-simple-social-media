@@ -1,0 +1,106 @@
+// Jenkinsfile — helm-lint-all
+// Lints every Helm chart in the repository in parallel.
+// Triggered on any change under infrastructure/helm/.
+
+@Library('sssm-shared-library') _
+
+pipeline {
+    agent { label 'helm-agent' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '20'))
+        timeout(time: 15, unit: 'MINUTES')
+        timestamps()
+    }
+
+    stages {
+        stage('Checkout') {
+            steps { checkout scm }
+        }
+
+        stage('Lint All Charts') {
+            parallel {
+                stage('sssm-services') {
+                    steps {
+                        sh '''
+                            helm dependency update \
+                                infrastructure/helm/charts/sssm-services/ 2>/dev/null || true
+                            helm lint infrastructure/helm/charts/sssm-services/ \
+                                --values infrastructure/helm/charts/sssm-services/values.yaml \
+                                --values infrastructure/helm/environments/prod/values-override.yaml \
+                                --strict
+                        '''
+                    }
+                }
+                stage('sssm-infra') {
+                    steps {
+                        sh '''
+                            helm dependency update \
+                                infrastructure/helm/charts/sssm-infra/ 2>/dev/null || true
+                            helm lint infrastructure/helm/charts/sssm-infra/ \
+                                --strict
+                        '''
+                    }
+                }
+                stage('monitoring') {
+                    steps {
+                        sh '''
+                            helm dependency update \
+                                infrastructure/helm/charts/monitoring/ 2>/dev/null || true
+                            helm lint infrastructure/helm/charts/monitoring/ \
+                                --strict
+                        '''
+                    }
+                }
+                stage('ingress') {
+                    steps {
+                        sh '''
+                            helm dependency update \
+                                infrastructure/helm/charts/ingress/ 2>/dev/null || true
+                            helm lint infrastructure/helm/charts/ingress/ \
+                                --strict
+                        '''
+                    }
+                }
+                stage('platform') {
+                    steps {
+                        sh '''
+                            helm dependency update \
+                                infrastructure/helm/charts/platform/ 2>/dev/null || true
+                            helm lint infrastructure/helm/charts/platform/ \
+                                --strict
+                        '''
+                    }
+                }
+            }
+        }
+
+        stage('Template Render (dry-run)') {
+            steps {
+                sh '''
+                    echo "▶ Dry-run render: sssm-services"
+                    helm template sssm-services infrastructure/helm/charts/sssm-services/ \
+                        --values infrastructure/helm/charts/sssm-services/values.yaml \
+                        --values infrastructure/helm/environments/prod/values-override.yaml \
+                        > /dev/null
+
+                    echo "▶ Dry-run render: sssm-infra"
+                    helm template sssm-infra infrastructure/helm/charts/sssm-infra/ > /dev/null
+
+                    echo "▶ All charts rendered successfully"
+                '''
+            }
+        }
+    }
+
+    post {
+        failure {
+            slackSend(
+                channel: '#ci-cd',
+                color:   'danger',
+                message: "❌ Helm lint failed — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>"
+            )
+        }
+        always { cleanWs() }
+    }
+}

@@ -1,0 +1,36 @@
+{
+  "settings": {
+    "number_of_shards": 3,
+    "number_of_replicas": 1,
+    "refresh_interval": "1s",
+    "analysis": {
+      "analyzer": {
+        "content_analyzer": {
+          "type": "standard",
+          "stopwords": "_english_"
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id":               { "type": "keyword" },
+      "content":          { "type": "text", "analyzer": "content_analyzer" },
+      "authorId":         { "type": "keyword" },
+      "authorUsername":   { "type": "keyword" },
+      "groupId":          { "type": "keyword" },
+      "postType":         { "type": "keyword" },
+      "status":           { "type": "keyword" },
+      "visibility":       { "type": "keyword" },
+      "hashtags":         { "type": "keyword" },
+      "mentionedUserIds": { "type": "keyword" },
+      "repostOfId":       { "type": "keyword" },
+      "quotedPostId":     { "type": "keyword" },
+      "likeCount":        { "type": "integer" },
+      "shareCount":       { "type": "integer" },
+      "viewCount":        { "type": "long" },
+      "isDeleted":        { "type": "boolean" },
+      "createdAt":        { "type": "date" }
+    }
+  }
+}

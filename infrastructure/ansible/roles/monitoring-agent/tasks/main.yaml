@@ -1,0 +1,53 @@
+---
+- name: Install CloudWatch agent
+  block:
+    - name: Download CloudWatch agent RPM
+      get_url:
+        url:  https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+        dest: /tmp/amazon-cloudwatch-agent.rpm
+        mode: "0644"
+    - name: Install CloudWatch agent
+      dnf:
+        name:  /tmp/amazon-cloudwatch-agent.rpm
+        state: present
+    - name: Configure CloudWatch agent
+      template:
+        src:  cloudwatch-agent-config.json.j2
+        dest: /opt/aws/amazon-cloudwatch-agent/etc/amazon-cloudwatch-agent.json
+        mode: "0644"
+    - name: Enable CloudWatch agent
+      systemd:
+        name:    amazon-cloudwatch-agent
+        enabled: true
+        state:   started
+
+- name: Create node_exporter user
+  user:
+    name:   node_exporter
+    system: true
+    shell:  /sbin/nologin
+
+- name: Install Prometheus node exporter
+  block:
+    - name: Download node exporter
+      get_url:
+        url:  "https://github.com/prometheus/node_exporter/releases/download/v{{ node_exporter_version }}/node_exporter-{{ node_exporter_version }}.linux-amd64.tar.gz"
+        dest: /tmp/node_exporter.tar.gz
+        mode: "0644"
+    - name: Extract node exporter
+      unarchive:
+        src:        /tmp/node_exporter.tar.gz
+        dest:       /usr/local/bin/
+        remote_src: true
+        extra_opts: [--strip-components=1]
+    - name: Create node_exporter systemd service
+      template:
+        src:  node_exporter.service.j2
+        dest: /etc/systemd/system/node_exporter.service
+        mode: "0644"
+    - name: Enable node exporter
+      systemd:
+        name:          node_exporter
+        enabled:       true
+        state:         started
+        daemon_reload: true

@@ -1,0 +1,45 @@
+sssm-services:
+  global:
+    registry: "123456789.dkr.ecr.us-east-1.amazonaws.com/sssm"
+    env: prod
+    tracing:
+      sampleRate: "0.05"
+
+  user-service:
+    replicaCount: 3
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+
+  post-service:
+    replicaCount: 3
+    autoscaling:
+      minReplicas: 3
+      maxReplicas: 20
+
+  media-service:
+    replicaCount: 3
+
+  post-guard-service:
+    replicaCount: 3
+    resources:
+      requests: { cpu: 1,   memory: 4Gi }
+      limits:   { cpu: 4,   memory: 8Gi }
+
+  user-analysis-service:
+    replicaCount: 2
+    resources:
+      requests: { cpu: 1,   memory: 4Gi }
+      limits:   { cpu: 4,   memory: 8Gi }
+
+  ai-dashboard-service:
+    replicaCount: 2
+
+ingress:
+  aws-load-balancer-controller:
+    clusterName: sssm-prod
+
+platform:
+  cluster-autoscaler:
+    autoDiscovery:
+      clusterName: sssm-prod

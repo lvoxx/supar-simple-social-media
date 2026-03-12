@@ -1,0 +1,26 @@
+apiVersion: v2
+name: sssm-infra
+description: SSSM — Self-managed infrastructure (Cassandra, Qdrant, MLflow, MinIO)
+type: application
+version: 1.0.0
+
+dependencies:
+  - name:       cassandra
+    version:    "11.3.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition:  cassandra.enabled
+
+  - name:       qdrant
+    version:    "1.10.x"
+    repository: https://qdrant.github.io/qdrant-helm
+    condition:  qdrant.enabled
+
+  - name:       mlflow
+    version:    "1.4.x"
+    repository: https://charts.bitnami.com/bitnami
+    condition:  mlflow.enabled
+
+  - name:       minio
+    version:    "14.x"
+    repository: https://charts.min.io/
+    condition:  minio.enabled

@@ -1,0 +1,16 @@
+project = "sssm"
+env        = "staging"
+aws_region = "us-east-1"
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+vpc_cidr           = "10.2.0.0/16"
+public_subnets     = ["10.2.0.0/20",  "10.2.16.0/20",  "10.2.32.0/20"]
+private_subnets    = ["10.2.48.0/20", "10.2.64.0/20",  "10.2.80.0/20"]
+database_subnets   = ["10.2.96.0/20", "10.2.112.0/20", "10.2.128.0/20"]
+eks_cluster_version = "1.30"
+rds_instance_class       = "db.t4g.large"
+redis_node_type          = "cache.r6g.large"
+kafka_instance_type      = "kafka.m5.large"
+kafka_storage_gb         = 200
+opensearch_instance_type = "r6g.large.search"
+opensearch_volume_gb     = 50
+domain_name = "staging.sssm.com"

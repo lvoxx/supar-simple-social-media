@@ -1,0 +1,10 @@
+// Jenkinsfile — post-guard-service
+// Calls the shared fastApiPipeline step.
+
+@Library('sssm-shared-library') _
+
+fastApiPipeline(
+    serviceName: 'post-guard-service',
+    servicePort:  8090,
+    serviceDir:  'python-services/post-guard-service'
+)

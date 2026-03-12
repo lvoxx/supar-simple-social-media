@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.media",
+  "type": "record",
+  "name": "MediaUploadFailedEvent",
+  "doc": "Published when media processing or safety check fails.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "media.upload.failed"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "media-service"},
+    {"name": "mediaId",         "type": "string"},
+    {"name": "ownerId",         "type": "string"},
+    {"name": "reason",          "type": "string"}
+  ]
+}

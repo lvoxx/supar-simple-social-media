@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bookmark-service-migrations
+  namespace: sssm
+data:
+  V1__init_bookmarks.sql: |
+    CREATE TABLE IF NOT EXISTS bookmark_collections (
+        id          UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id     UUID         NOT NULL,
+        name        VARCHAR(100) NOT NULL,
+        description TEXT,
+        color       VARCHAR(7),
+        icon        VARCHAR(50),
+        is_default  BOOLEAN      NOT NULL DEFAULT FALSE,
+        visibility  VARCHAR(20)  NOT NULL DEFAULT 'PRIVATE',
+        post_count  INT          NOT NULL DEFAULT 0,
+        created_at  TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
+        updated_at  TIMESTAMPTZ,
+        is_deleted  BOOLEAN      NOT NULL DEFAULT FALSE,
+        deleted_at  TIMESTAMPTZ
+    );
+    CREATE INDEX IF NOT EXISTS idx_bookmark_collections_user ON bookmark_collections(user_id) WHERE is_deleted = false;
+
+    CREATE TABLE IF NOT EXISTS bookmarks (
+        post_id              UUID        NOT NULL,
+        user_id              UUID        NOT NULL,
+        collection_id        UUID        NOT NULL,
+        note                 TEXT,
+        saved_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        post_author_id       UUID        NOT NULL,
+        post_content_preview TEXT,
+        post_media_thumb     TEXT,
+        post_created_at      TIMESTAMPTZ NOT NULL,
+        PRIMARY KEY (post_id, user_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_user_collection      ON bookmarks(user_id, collection_id);
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_user_saved_at        ON bookmarks(user_id, saved_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_collection_post_date ON bookmarks(collection_id, post_created_at DESC);
+    CREATE INDEX IF NOT EXISTS idx_bookmarks_fts ON bookmarks
+        USING GIN (to_tsvector('simple', COALESCE(post_content_preview, '')));
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: bookmark-service-db-init
+  namespace: sssm
+  annotations:
+    "helm.sh/hook": pre-upgrade,pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: 3
+  template:
+    spec:
+      restartPolicy: Never
+      serviceAccountName: bookmark-service
+      initContainers:
+        - name: wait-for-db
+          image: busybox:1.36
+          command: ['sh', '-c', 'until nc -z $(DB_HOST) $(DB_PORT); do echo waiting for postgres; sleep 3; done']
+          envFrom:
+            - secretRef:
+                name: bookmark-service-secrets
+      containers:
+        - name: flyway
+          image: flyway/flyway:10-alpine
+          args: [migrate, -outOfOrder=false, -validateOnMigrate=true]
+          env:
+            - name: FLYWAY_URL
+              value: "jdbc:postgresql:$(DB_HOST):$(DB_PORT)/sssm_bookmarks"
+            - name: FLYWAY_USER
+              valueFrom:
+                secretKeyRef:
+                  name: bookmark-service-secrets
+                  key: DB_USER
+            - name: FLYWAY_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: bookmark-service-secrets
+                  key: DB_PASSWORD
+            - name: FLYWAY_LOCATIONS
+              value: "filesystem:/flyway/sql"
+            - name: FLYWAY_BASELINE_ON_MIGRATE
+              value: "true"
+          envFrom:
+            - secretRef:
+                name: bookmark-service-secrets
+          volumeMounts:
+            - name: migrations
+              mountPath: /flyway/sql
+      volumes:
+        - name: migrations
+          configMap:
+            name: bookmark-service-migrations

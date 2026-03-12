@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:ascopes.github.io)",
+      "Bash(for f:*)",
+      "Bash(do echo:*)",
+      "Read(//k/mygit/supar-simple-social-media-SpringBoot/**)",
+      "Bash(done)"
+    ]
+  }
+}

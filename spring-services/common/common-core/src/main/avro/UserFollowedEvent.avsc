@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.user",
+  "type": "record",
+  "name": "UserFollowedEvent",
+  "doc": "Published when user A follows user B.",
+  "fields": [
+    {"name": "eventId",          "type": "string"},
+    {"name": "eventType",        "type": "string", "default": "user.followed"},
+    {"name": "version",          "type": "string", "default": "1"},
+    {"name": "timestamp",        "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService",  "type": "string", "default": "user-service"},
+    {"name": "followerId",       "type": "string", "doc": "UUID of the user who followed."},
+    {"name": "followingId",      "type": "string", "doc": "UUID of the user who was followed."},
+    {"name": "followerUsername", "type": "string"}
+  ]
+}

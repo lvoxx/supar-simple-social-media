@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.comment",
+  "type": "record",
+  "name": "CommentLikedEvent",
+  "doc": "Published when a user likes a comment.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "comment.liked"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "comment-service"},
+    {"name": "commentId",       "type": "string"},
+    {"name": "userId",          "type": "string"},
+    {"name": "authorId",        "type": "string"}
+  ]
+}

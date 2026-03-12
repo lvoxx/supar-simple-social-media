@@ -1,0 +1,24 @@
+---
+- name: Apply baseline configuration to all EKS nodes
+  hosts: all
+  gather_facts: true
+  vars_files:
+    - "inventories/{{ env }}/group_vars/all.yaml"
+
+  roles:
+    - role: common
+      tags: [common, always]
+    - role: security-hardening
+      tags: [security]
+    - role: eks-node
+      tags: [eks]
+    - role: monitoring-agent
+      tags: [monitoring]
+
+- name: Apply GPU drivers to ai-gpu nodes only
+  hosts: node_group_ai_gpu
+  gather_facts: true
+
+  roles:
+    - role: gpu-driver
+      tags: [gpu]

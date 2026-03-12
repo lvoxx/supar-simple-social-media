@@ -1,0 +1,57 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sssm-services
+  namespace: argocd
+  annotations:
+    argocd-image-updater.argoproj.io/image-list: >-
+      user-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/user-service,
+      media-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/media-service,
+      post-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/post-service,
+      comment-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/comment-service,
+      notification-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/notification-service,
+      search-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/search-service,
+      group-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/group-service,
+      private-message-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/private-message-service,
+      message-notification-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/message-notification-service,
+      post-guard-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/post-guard-service,
+      media-guard-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/media-guard-service,
+      user-analysis-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/user-analysis-service,
+      ai-dashboard-service=123456789.dkr.ecr.us-east-1.amazonaws.com/sssm/ai-dashboard-service
+    argocd-image-updater.argoproj.io/write-back-method: git
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/update-strategy: semver
+spec:
+  project: sssm
+  source:
+    repoURL:        https://github.com/lvoxx/supar-simple-social-media-SpringBoot.git
+    targetRevision: HEAD
+    path:           infrastructure/helm/charts/sssm-services
+    helm:
+      valueFiles:
+        - ../../environments/prod/values-override.yaml
+
+  destination:
+    server:    https://kubernetes.default.svc
+    namespace: sssm
+
+  syncPolicy:
+    automated:
+      prune:    true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - PrunePropagationPolicy=foreground
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas

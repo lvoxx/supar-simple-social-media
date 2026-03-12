@@ -1,0 +1,10 @@
+// Jenkinsfile — message-notification-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'message-notification-service',
+    servicePort:  8089
+)

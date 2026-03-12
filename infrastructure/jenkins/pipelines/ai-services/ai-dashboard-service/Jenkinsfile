@@ -1,0 +1,10 @@
+// Jenkinsfile — ai-dashboard-service
+// Calls the shared fastApiPipeline step.
+
+@Library('sssm-shared-library') _
+
+fastApiPipeline(
+    serviceName: 'ai-dashboard-service',
+    servicePort:  8093,
+    serviceDir:  'python-services/ai-dashboard-service'
+)

@@ -1,0 +1,80 @@
+image:
+  repository: "{{ .Values.global.registry }}/comment-service"
+  tag: "1.0.0"
+
+replicaCount: 2
+
+service:
+  type: ClusterIP
+  port: 8084
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target: { type: Utilization, averageUtilization: 70 }
+    - type: Resource
+      resource:
+        name: memory
+        target: { type: Utilization, averageUtilization: 80 }
+
+resources:
+  requests:
+    cpu:    250m
+    memory: 512Mi
+  limits:
+    cpu:    "1"
+    memory: 1Gi
+
+env:
+  SPRING_PROFILES_ACTIVE: prod
+  SERVER_PORT: "8084"
+  TRACING_SAMPLE_RATE: "0.1"
+
+externalSecrets:
+  - secretName: comment-service-secrets
+    remoteRef:  sssm/prod/comment-service
+    keys:
+      - CASSANDRA_CONTACT_POINTS
+      - CASSANDRA_PORT
+      - CASSANDRA_KEYSPACE
+      - CASSANDRA_USERNAME
+      - CASSANDRA_PASSWORD
+      - REDIS_HOST
+      - REDIS_PORT
+      - REDIS_PASSWORD
+      - KAFKA_BOOTSTRAP_SERVERS
+      - KAFKA_SASL_USERNAME
+      - KAFKA_SASL_PASSWORD
+
+dbInit:
+  enabled: false
+
+
+livenessProbe:
+  httpGet:
+    path: /actuator/health/liveness
+    port: 8084
+  initialDelaySeconds: 60
+  periodSeconds: 15
+
+readinessProbe:
+  httpGet:
+    path: /actuator/health/readiness
+    port: 8084
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          topologyKey: kubernetes.io/hostname
+          labelSelector:
+            matchLabels:
+              app: comment-service

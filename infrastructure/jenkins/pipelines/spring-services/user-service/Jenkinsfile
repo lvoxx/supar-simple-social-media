@@ -1,0 +1,10 @@
+// Jenkinsfile — user-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'user-service',
+    servicePort:  8081
+)

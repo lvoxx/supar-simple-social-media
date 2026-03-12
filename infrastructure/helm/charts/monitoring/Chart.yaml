@@ -1,0 +1,18 @@
+apiVersion: v2
+name: monitoring
+description: SSSM observability stack — Prometheus, Grafana, Loki, Zipkin
+type: application
+version: 1.0.0
+
+dependencies:
+  - name:       kube-prometheus-stack
+    version:    "60.x"
+    repository: https://prometheus-community.github.io/helm-charts
+
+  - name:       loki-stack
+    version:    "2.10.x"
+    repository: https://grafana.github.io/helm-charts
+
+  - name:       zipkin
+    version:    "0.4.x"
+    repository: https://openzipkin.github.io/zipkin

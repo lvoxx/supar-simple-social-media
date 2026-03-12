@@ -1,0 +1,45 @@
+aws-load-balancer-controller:
+  clusterName: sssm-prod   # overridden per environment
+  replicaCount: 2
+  nodeSelector: { role: system }
+  tolerations:
+    - key: CriticalAddonsOnly
+      operator: Exists
+      effect: NoSchedule
+  serviceAccount:
+    create: true
+    name: aws-load-balancer-controller
+    annotations:
+      eks.amazonaws.com/role-arn: "${LB_CONTROLLER_ROLE_ARN}"
+  resources:
+    requests: { cpu: 100m,  memory: 128Mi }
+    limits:   { cpu: 500m,  memory: 512Mi }
+
+ingress-nginx:
+  controller:
+    replicaCount: 2
+    nodeSelector: { role: system }
+    tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
+        effect: NoSchedule
+    service:
+      type: LoadBalancer
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: external
+        service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: ip
+        service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    config:
+      use-forwarded-headers:   "true"
+      compute-full-forwarded-for: "true"
+      use-proxy-protocol:      "false"
+      proxy-body-size:         "50m"
+      proxy-read-timeout:      "300"
+      proxy-send-timeout:      "300"
+    resources:
+      requests: { cpu: 250m,  memory: 512Mi }
+      limits:   { cpu: 1,     memory: 1Gi   }
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true

@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sssm-infra
+  namespace: argocd
+
+spec:
+  project: sssm
+  source:
+    repoURL:        https://github.com/lvoxx/supar-simple-social-media-SpringBoot.git
+    targetRevision: HEAD
+    path:           infrastructure/helm/charts/sssm-infra
+    helm:
+      valueFiles:
+        - ../../environments/prod/values-override.yaml
+
+  destination:
+    server:    https://kubernetes.default.svc
+    namespace: sssm-infra
+
+  syncPolicy:
+    automated:
+      prune:    false
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+

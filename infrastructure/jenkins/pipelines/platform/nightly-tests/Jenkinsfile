@@ -1,0 +1,204 @@
+// Jenkinsfile — nightly-integration-tests
+// Runs full integration test suite for every service against the dev cluster.
+// Scheduled: 02:xx UTC every night.
+
+pipeline {
+    agent { label 'maven-agent' }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '14'))
+        timeout(time: 90, unit: 'MINUTES')
+        timestamps()
+    }
+
+    environment {
+        KUBECONFIG        = credentials('kubeconfig-dev')
+        AWS_DEFAULT_REGION = 'us-east-1'
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([$class: 'GitSCM',
+                    branches: [[name: '*/develop']],
+                    userRemoteConfigs: [[
+                        url:           'https://github.com/lvoxx/supar-simple-social-media-SpringBoot.git',
+                        credentialsId: 'github-credentials'
+                    ]]
+                ])
+            }
+        }
+
+        stage('Spring Boot — Integration Tests') {
+            parallel {
+                stage('user-service') {
+                    steps {
+                        dir('spring-services/user-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            junit 'spring-services/user-service/target/failsafe-reports/**/*.xml'
+                        }
+                    }
+                }
+                stage('post-service') {
+                    steps {
+                        dir('spring-services/post-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            junit 'spring-services/post-service/target/failsafe-reports/**/*.xml'
+                        }
+                    }
+                }
+                stage('comment-service') {
+                    steps {
+                        dir('spring-services/comment-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('media-service') {
+                    steps {
+                        dir('spring-services/media-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('notification-service') {
+                    steps {
+                        dir('spring-services/notification-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('search-service') {
+                    steps {
+                        dir('spring-services/search-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('group-service') {
+                    steps {
+                        dir('spring-services/group-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('private-message-service') {
+                    steps {
+                        dir('spring-services/private-message-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+                stage('message-notification-service') {
+                    steps {
+                        dir('spring-services/message-notification-service') {
+                            sh '''
+                                mvn failsafe:integration-test failsafe:verify \
+                                    -Pintegration-test \
+                                    --batch-mode --no-transfer-progress
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('FastAPI — Integration Tests') {
+            parallel {
+                stage('post-guard-service') {
+                    agent { label 'python-agent' }
+                    steps {
+                        dir('python-services/post-guard-service') {
+                            sh '''
+                                python3 -m venv .venv
+                                . .venv/bin/activate
+                                pip install -r requirements.txt -q
+                                pytest tests/integration/ -v \
+                                    --junitxml=test-results-integration.xml \
+                                    --timeout=120
+                            '''
+                        }
+                    }
+                    post {
+                        always {
+                            junit 'python-services/post-guard-service/test-results-integration.xml'
+                        }
+                    }
+                }
+                stage('user-analysis-service') {
+                    agent { label 'python-agent' }
+                    steps {
+                        dir('python-services/user-analysis-service') {
+                            sh '''
+                                python3 -m venv .venv
+                                . .venv/bin/activate
+                                pip install -r requirements.txt -q
+                                pytest tests/integration/ -v \
+                                    --junitxml=test-results-integration.xml \
+                                    --timeout=120
+                            '''
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: '#nightly-tests',
+                color:   'good',
+                message: "✅ Nightly integration tests PASSED — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}>"
+            )
+        }
+        failure {
+            slackSend(
+                channel: '#nightly-tests',
+                color:   'danger',
+                message: "❌ Nightly integration tests FAILED — <${env.BUILD_URL}|Build #${env.BUILD_NUMBER}> @here"
+            )
+        }
+        always { cleanWs() }
+    }
+}

@@ -1,0 +1,6 @@
+# Managed by Ansible — SSSM audit rules
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/sudoers -p wa -k sudoers
+-w /var/log/auth.log -p wa -k auth
+-a always,exit -F arch=b64 -S execve -k exec

@@ -1,0 +1,39 @@
+---
+- name: Install NVIDIA driver prerequisites
+  dnf:
+    name:
+      - kernel-devel
+      - kernel-headers
+      - gcc
+      - make
+      - dkms
+    state: present
+
+- name: Add NVIDIA CUDA repository
+  get_url:
+    url:  https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo
+    dest: /etc/yum.repos.d/cuda-rhel9.repo
+    mode: "0644"
+
+- name: Install NVIDIA driver and CUDA toolkit
+  dnf:
+    name:
+      - "nvidia-driver-{{ nvidia_driver_version }}"
+      - "cuda-toolkit-{{ cuda_version }}"
+    state: present
+
+- name: Verify GPU detected
+  command: nvidia-smi
+  register: nvidia_smi_output
+  changed_when: false
+
+- name: Print GPU info
+  debug:
+    msg: "{{ nvidia_smi_output.stdout_lines }}"
+
+- name: Configure containerd for NVIDIA runtime
+  template:
+    src:  containerd-nvidia.toml.j2
+    dest: /etc/containerd/config.toml
+    mode: "0644"
+  notify: restart containerd

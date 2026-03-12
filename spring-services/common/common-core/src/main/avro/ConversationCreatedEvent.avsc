@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.message",
+  "type": "record",
+  "name": "ConversationCreatedEvent",
+  "doc": "Published when a new conversation is created.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "conversation.created"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "private-message-service"},
+    {"name": "conversationId",  "type": "string"},
+    {"name": "type",            "type": "string"},
+    {"name": "createdBy",       "type": "string"}
+  ]
+}

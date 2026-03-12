@@ -1,0 +1,16 @@
+project = "sssm"
+env        = "dev"
+aws_region = "us-east-1"
+availability_zones = ["us-east-1a", "us-east-1b", "us-east-1c"]
+vpc_cidr           = "10.1.0.0/16"
+public_subnets     = ["10.1.0.0/20",  "10.1.16.0/20",  "10.1.32.0/20"]
+private_subnets    = ["10.1.48.0/20", "10.1.64.0/20",  "10.1.80.0/20"]
+database_subnets   = ["10.1.96.0/20", "10.1.112.0/20", "10.1.128.0/20"]
+eks_cluster_version = "1.30"
+rds_instance_class       = "db.t4g.medium"
+redis_node_type          = "cache.t4g.medium"
+kafka_instance_type      = "kafka.t3.small"
+kafka_storage_gb         = 100
+opensearch_instance_type = "t3.small.search"
+opensearch_volume_gb     = 20
+domain_name = "dev.sssm.com"

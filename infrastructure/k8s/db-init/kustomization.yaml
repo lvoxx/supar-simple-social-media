@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: sssm
+
+# Apply thứ tự: PostgreSQL trước (không deps), rồi Cassandra, rồi OpenSearch
+resources:
+  # PostgreSQL / Flyway
+  - user-service/db-init-job.yaml
+  - post-service/db-init-job.yaml
+  - media-service/db-init-job.yaml
+  - group-service/db-init-job.yaml
+  - bookmark-service/db-init-job.yaml
+  # Cassandra / cqlsh
+  - comment-service/db-init-job.yaml
+  - notification-service/db-init-job.yaml
+  - message-notification-service/db-init-job.yaml
+  - private-message-service/db-init-job.yaml
+  - post-interaction-service/db-init-job.yaml
+  # OpenSearch
+  - search-service/db-init-job.yaml

@@ -1,0 +1,13 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: post-service
+  # postgres-starter → pool, validation-query
+  # kafka-starter    → bootstrap, serializers, schema-registry
+  # redis-starter    → host, port, redisson, cache
+  r2dbc:
+    url: r2dbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:sssm_posts}
+    username: ${DB_USER:postgres}
+    password: ${DB_PASSWORD:postgres}

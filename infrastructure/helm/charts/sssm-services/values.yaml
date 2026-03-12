@@ -1,0 +1,47 @@
+global:
+  registry: "123456789.dkr.ecr.us-east-1.amazonaws.com/sssm"
+  imagePullPolicy: IfNotPresent
+  env: prod
+  namespace: sssm
+
+  secretsManager:
+    region: us-east-1
+    refreshInterval: 1h
+
+  resources:
+    requests:
+      cpu:    250m
+      memory: 512Mi
+    limits:
+      cpu:    "1"
+      memory: 1Gi
+
+  metrics:
+    enabled: true
+    path:    /actuator/prometheus
+    port:    8080
+  tracing:
+    zipkinEndpoint: http://zipkin.monitoring:9411/api/v2/spans
+    sampleRate:     "0.1"
+
+  nodeSelector:
+    role: app
+  tolerations: []
+
+  podDisruptionBudget:
+    minAvailable: 1
+
+# Per-service enable/disable flags
+userService:                { enabled: true }
+mediaService:               { enabled: true }
+postService:                { enabled: true }
+commentService:             { enabled: true }
+notificationService:        { enabled: true }
+searchService:              { enabled: true }
+groupService:               { enabled: true }
+privateMessageService:      { enabled: true }
+messageNotificationService: { enabled: true }
+postGuardService:           { enabled: true }
+mediaGuardService:          { enabled: true }
+userAnalysisService:        { enabled: true }
+aiDashboardService:         { enabled: true }

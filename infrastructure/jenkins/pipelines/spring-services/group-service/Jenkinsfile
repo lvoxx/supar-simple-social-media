@@ -1,0 +1,10 @@
+// Jenkinsfile — group-service
+// Calls the shared springBootPipeline step.
+// All pipeline logic lives in the shared library.
+
+@Library('sssm-shared-library') _
+
+springBootPipeline(
+    serviceName: 'group-service',
+    servicePort:  8087
+)

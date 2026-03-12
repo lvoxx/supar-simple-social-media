@@ -1,0 +1,20 @@
+{
+  "namespace": "io.github.lvoxx.media",
+  "type": "record",
+  "name": "MediaUploadCompletedEvent",
+  "doc": "Published after a media asset has been processed, safety-checked and uploaded to CDN.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "media.upload.completed"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "media-service"},
+    {"name": "mediaId",         "type": "string"},
+    {"name": "ownerId",         "type": "string"},
+    {"name": "ownerType",       "type": "string", "doc": "USER | POST | COMMENT | MESSAGE | GROUP"},
+    {"name": "cdnUrl",          "type": "string"},
+    {"name": "thumbnailUrl",    "type": ["null", "string"], "default": null},
+    {"name": "contentType",     "type": "string"},
+    {"name": "status",          "type": "string", "doc": "READY | REJECTED"}
+  ]
+}

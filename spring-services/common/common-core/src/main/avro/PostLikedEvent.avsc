@@ -1,0 +1,16 @@
+{
+  "namespace": "io.github.lvoxx.post",
+  "type": "record",
+  "name": "PostLikedEvent",
+  "doc": "Published when a user likes a post.",
+  "fields": [
+    {"name": "eventId",         "type": "string"},
+    {"name": "eventType",       "type": "string", "default": "post.liked"},
+    {"name": "version",         "type": "string", "default": "1"},
+    {"name": "timestamp",       "type": {"type": "long", "logicalType": "timestamp-millis"}},
+    {"name": "producerService", "type": "string", "default": "post-service"},
+    {"name": "postId",          "type": "string"},
+    {"name": "userId",          "type": "string"},
+    {"name": "authorId",        "type": "string", "doc": "UUID of the post author, for notification routing."}
+  ]
+}
