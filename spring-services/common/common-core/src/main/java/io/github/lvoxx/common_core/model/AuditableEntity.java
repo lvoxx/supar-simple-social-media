@@ -1,6 +1,9 @@
 package io.github.lvoxx.common_core.model;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
+
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedBy;
@@ -10,16 +13,18 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Data
+@SuperBuilder
+@NoArgsConstructor
 public abstract class AuditableEntity {
     @CreatedDate
-    private Instant createdAt;
+    protected Instant createdAt;
 
     @LastModifiedDate
-    private Instant updatedAt;
+    protected Instant updatedAt;
 
     @CreatedBy
-    private UUID createdBy;
+    protected UUID createdBy;
 
     @LastModifiedBy
-    private UUID updatedBy;
+    protected UUID updatedBy;
 }

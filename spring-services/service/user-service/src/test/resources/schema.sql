@@ -39,17 +39,41 @@ CREATE TABLE IF NOT EXISTS followers (
 );
 CREATE INDEX IF NOT EXISTS idx_followers_following_id ON followers(following_id);
 
-CREATE TABLE IF NOT EXISTS follow_requests (
-    id           UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
-    requester_id UUID        NOT NULL,
-    target_id    UUID        NOT NULL,
-    status       VARCHAR(20) NOT NULL DEFAULT 'PENDING',
-    created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+CREATE TABLE IF NOT EXISTS verifications (
+    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id       UUID        NOT NULL,
+    type          VARCHAR(30),
+    status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    document_url  TEXT,
+    reviewed_by   UUID,
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at    TIMESTAMPTZ
 );
+CREATE INDEX IF NOT EXISTS idx_verifications_user_id ON verifications(user_id);
 
 CREATE TABLE IF NOT EXISTS account_history (
     id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id     UUID        NOT NULL,
-    action      VARCHAR(50),
+    action      VARCHAR(50) NOT NULL,
+    detail      JSONB,
+    ip          INET,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+CREATE INDEX IF NOT EXISTS idx_account_history_user_id ON account_history(user_id);
+
+CREATE TABLE IF NOT EXISTS follow_requests (
+    id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    requester_id  UUID        NOT NULL,
+    target_id     UUID        NOT NULL,
+    status        VARCHAR(20) NOT NULL DEFAULT 'PENDING',
+    created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_follow_req_unique ON follow_requests(requester_id, target_id) WHERE status = 'PENDING';
+
+CREATE TABLE IF NOT EXISTS user_blocks (
+    blocker_id UUID        NOT NULL,
+    blocked_id UUID        NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    PRIMARY KEY (blocker_id, blocked_id)
+);
+CREATE INDEX IF NOT EXISTS idx_user_blocks_blocked_id ON user_blocks(blocked_id);

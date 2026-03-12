@@ -3,6 +3,8 @@ spring:
     init:
       mode: always
       schema-locations: classpath:schema.sql
+  # r2dbc URL is provided by @DynamicPropertySource in integration tests
+  # For unit tests and non-IT tests, keep a fallback (will not be used without a real DB)
   r2dbc:
     url: r2dbc:postgresql://localhost:5432/sssm_test
     username: test
@@ -15,9 +17,23 @@ spring:
     bootstrap-servers: localhost:9092
     properties:
       schema.registry.url: http://localhost:8081
+  # Disable auto-configuration that requires real infrastructure for unit tests
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration
 
 logging:
   level:
     io.github.lvoxx: DEBUG
     org.springframework.r2dbc: DEBUG
     io.r2dbc.postgresql: WARN
+    org.testcontainers: INFO
+
+# Disable grpc server for tests
+grpc:
+  server:
+    port: -1
+
+---
+testcontainers:
+  postgres: postgres:17.4-alpine
