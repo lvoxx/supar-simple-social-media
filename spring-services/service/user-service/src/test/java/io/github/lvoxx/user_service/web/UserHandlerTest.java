@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -31,7 +32,20 @@ import io.github.lvoxx.user_service.web.handler.UserHandler;
 import io.github.lvoxx.user_service.web.router.UserRouter;
 import reactor.core.publisher.Mono;
 
-@Tag("unit")
+/**
+ * Unit tests for {@link UserHandler} HTTP endpoints.
+ *
+ * <p>Uses {@link WebTestClient} bound directly to the {@link io.github.lvoxx.user_service.web.router.UserRouter}
+ * function — no Spring Boot context is started. A {@link io.github.lvoxx.common_core.security.UserPrincipal}
+ * for user {@code "alice"} is injected into the reactive subscriber context via a WebFilter,
+ * simulating an authenticated request without any security infrastructure.
+ *
+ * <p>Each test stubs exactly the {@link UserService} method that the endpoint under test delegates to,
+ * then asserts the HTTP status code and relevant JSON fields in the response body.
+ */
+@Tags({
+        @Tag("UT"), @Tag("Mock"), @Tag("Handler")
+})
 @DisplayName("UserHandler — HTTP endpoints via WebTestClient")
 @ExtendWith(MockitoExtension.class)
 class UserHandlerTest {
