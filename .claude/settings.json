@@ -1,0 +1,7 @@
+{
+  "enabledPlugins": {
+    "ecc@ecc": true,
+    "claude-mem@thedotmack": true,
+    "andrej-karpathy-skills@karpathy-skills": true
+  }
+}
