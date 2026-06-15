@@ -1,12 +1,15 @@
 {
+  "permissions": {
+    "allow": [
+      "Bash(apps/java/mvnw -f apps/java/pom.xml -pl user-service -am -q -DskipTests test-compile)",
+      "Bash(java -version)",
+      "Bash(docker version *)",
+      "Bash(echo \"EXIT=$?\")"
+    ]
+  },
   "enabledPlugins": {
     "ecc@ecc": true,
     "claude-mem@thedotmack": true,
     "andrej-karpathy-skills@karpathy-skills": true
-  },
-  "permissions": {
-    "allow": [
-      "Bash(apps/java/mvnw -f apps/java/pom.xml -pl user-service -am -q -DskipTests test-compile)"
-    ]
   }
 }

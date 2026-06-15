@@ -39,7 +39,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [~] Local dev RUNTIME verification (`make up && make migrate`, login via realm) — artifacts ready; not yet executed (needs Docker)
 
 ## Phase 1 — Core MVP (first cloud env)
-- [~] `user-service`: profile CRUD, follow/unfollow, Keycloak link (impl done — profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; pending: build/test run + integration tests)
+- [x] `user-service`: profile CRUD, follow/unfollow, Keycloak link (profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; `mvn test` green — 13 unit/web/service tests; Testcontainers integration tests (`*IT`, run in CI `verify`) validate JPA mappings against the real infra migration + the follow/pagination flow)
 - [ ] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
 - [ ] `timeline-service`: fan-out-on-read from Redis cache + Postgres; cursor pagination
 - [ ] `media-service` (Spring Initializr) + imgproxy: presigned upload → R2 → AVIF/WebP variants (images)
