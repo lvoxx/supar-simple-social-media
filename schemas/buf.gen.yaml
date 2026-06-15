@@ -1,0 +1,9 @@
+version: v2
+# Single source of truth: these schemas generate code for BOTH languages so Java and Go services
+# share identical event/DTO contracts and cannot drift.
+plugins:
+  - remote: buf.build/protocolbuffers/go
+    out: gen/go
+    opt: paths=source_relative
+  - remote: buf.build/protocolbuffers/java
+    out: gen/java
