@@ -13,22 +13,16 @@
 
     <artifactId>sssm-postgres-starter</artifactId>
     <name>SSSM Starter :: Postgres</name>
-    <description>Aggregates the JPA + Flyway + PostgreSQL stack so a service depends on one
-        artifact instead of repeating four. Libraries have no official initializer, so this is a
-        plain Maven module by design. Versions are inherited from the reactor parent.</description>
+    <description>Aggregates the JPA + PostgreSQL stack so a service depends on one artifact
+        instead of repeating two. Deliberately ships NO migration tooling (Flyway/Liquibase):
+        the database schema is owned and initialized by infrastructure, never by the service
+        applications. Apps run with ddl-auto=validate. Libraries have no official initializer, so
+        this is a plain Maven module by design. Versions are inherited from the reactor parent.</description>
 
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-flyway</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>

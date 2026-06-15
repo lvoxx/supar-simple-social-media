@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: user-service
+  datasource:
+    # Schema `sssm` is created and migrated by INFRASTRUCTURE (Flyway runner), never by
+    # this app. See deploy/migrations/user-service + docker/docker-compose.flyway.yml.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=sssm}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The app only validates against the infra-managed schema; it never creates it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # Keycloak realm `ssw-realm` (see docker/keycloak/ssw-realm.json).
+          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/ssw-realm}
+
+server:
+  # 8080 is taken by Keycloak in local dev.
+  port: ${SERVER_PORT:8081}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO

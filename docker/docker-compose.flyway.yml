@@ -1,0 +1,34 @@
+# Infrastructure-owned database migration runner.
+# The schema is NEVER initialized by the service applications — only here (and by the
+# equivalent Kubernetes migration Job in cloud). Run combined with the postgres compose
+# so they share the `postgres` network:
+#
+#   docker compose --env-file docker/.dev.env \
+#     -f docker/docker-compose.postgres.yml -f docker/docker-compose.flyway.yml \
+#     run --rm flyway-user
+#
+# or simply:  make migrate
+
+services:
+  flyway-user:
+    image: flyway/flyway:11
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >-
+      -url=jdbc:postgresql://postgres:5432/postgres
+      -user=${POSTGRES_USER:-postgres}
+      -password=${POSTGRES_PASSWORD:-postgres}
+      -schemas=sssm
+      -createSchemas=true
+      -connectRetries=10
+      -locations=filesystem:/flyway/sql
+      migrate
+    volumes:
+      - ../deploy/migrations/user-service:/flyway/sql:ro
+    networks:
+      - postgres
+
+networks:
+  postgres:
+    driver: bridge

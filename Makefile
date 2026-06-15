@@ -11,7 +11,12 @@ COMPOSE_FILES := \
 	-f $(COMPOSE_DIR)/docker-compose.elasticsearch.yml \
 	-f $(COMPOSE_DIR)/docker-compose.keycloak.yml
 
-.PHONY: up down logs proto build test build-java build-go test-java test-go fmt
+# Database initialization is INFRASTRUCTURE-OWNED, never run by the apps.
+MIGRATE_FILES := \
+	-f $(COMPOSE_DIR)/docker-compose.postgres.yml \
+	-f $(COMPOSE_DIR)/docker-compose.flyway.yml
+
+.PHONY: up down logs migrate proto build test build-java build-go test-java test-go fmt
 
 ## Infra ---------------------------------------------------------------------
 up:        ## start local infra
@@ -22,6 +27,9 @@ down:      ## stop local infra
 
 logs:      ## tail infra logs
 	$(COMPOSE) $(COMPOSE_FILES) logs -f
+
+migrate:   ## apply DB migrations via infra (Flyway) — NEVER via the app
+	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-user
 
 ## Codegen -------------------------------------------------------------------
 proto:     ## regenerate Java + Go code from schemas/

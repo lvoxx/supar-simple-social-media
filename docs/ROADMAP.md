@@ -5,7 +5,12 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 
 > Services are created with their **official initializers** (Spring Initializr, `go mod init`,
 > `npm create vue`, `flutter create`) under `apps/{java,go,vue,flutter}`. Shared code lives in
-> `libs/`. Event/DTO contracts live once in `schemas/` (Protobuf, codegen for Java + Go).
+> `apps/java/{starters,common}/*` (Java) and `apps/go/common/*` (Go). Event/DTO contracts live
+> once in `schemas/` (Protobuf, codegen for Java + Go).
+>
+> **DB rule:** database schemas are owned and initialized by **infrastructure only**
+> (`deploy/migrations/*` applied by a Flyway runner — `make migrate` locally, a k8s Job in cloud).
+> Service apps NEVER migrate; they run with `ddl-auto=validate` and only read the schema.
 
 ## Cross-cutting (every phase)
 - [ ] New Spring services generated via Spring Initializr; Go via `go mod init`; web/mobile via official CLIs
@@ -25,8 +30,12 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [x] Protobuf `schemas/` (`post_events.proto`) + `buf.yaml`/`buf.gen.yaml`
 - [x] GitHub Actions `ci.yml` (java / go / proto); README, ARCHITECTURE, ADR-0001 (R2), ADR-0002 (lang split)
 - [x] Java shared modules established: `starters/sssm-postgres-starter`, `common/sssm-common-core` (publish to GitHub Packages later)
-- [ ] Local dev verified: `make up`; Keycloak realm `ssw-realm` import; Flyway baseline migration
-- [ ] Pre-commit hooks, conventional commits, release-please
+- [x] Infra-owned DB init: `deploy/migrations/user-service/V1__baseline.sql` (profiles + follows) applied by `docker/docker-compose.flyway.yml` via `make migrate`; app de-Flyway'd (starter ships no migration tooling, `ddl-auto=validate`)
+- [x] `user-service` runtime config (`application.yml`): datasource (schema `sssm`), OIDC resource server → realm `ssw-realm`, actuator/prometheus, port 8081
+- [x] Keycloak realm import `docker/keycloak/ssw-realm.json` (roles user/creator/admin, PKCE web client `sssm-web`, dev user)
+- [x] Pre-commit hooks (`.pre-commit-config.yaml`: whitespace/yaml/json/gitleaks/gofmt), conventional commits (commit-msg hook), release-please (`release-please-config.json` + manifest + workflow)
+- [ ] Frontends `apps/vue` + `apps/flutter` — generated via official CLIs AFTER the Go/Java backend is complete
+- [~] Local dev RUNTIME verification (`make up && make migrate`, login via realm) — artifacts ready; not yet executed (needs Docker)
 
 ## Phase 1 — Core MVP (first cloud env)
 - [ ] `user-service`: profile CRUD, follow/unfollow, Keycloak link

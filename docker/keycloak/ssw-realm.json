@@ -1,0 +1,56 @@
+{
+  "realm": "ssw-realm",
+  "enabled": true,
+  "displayName": "SSSM",
+  "sslRequired": "external",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "accessTokenLifespan": 300,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      { "name": "user", "description": "Standard end user" },
+      { "name": "creator", "description": "Content creator (creator dashboard access)" },
+      { "name": "admin", "description": "Platform administrator (moderation/admin console)" }
+    ]
+  },
+  "defaultRoles": ["user"],
+  "clients": [
+    {
+      "clientId": "sssm-web",
+      "name": "SSSM Web (Vue SPA)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "rootUrl": "http://localhost:5173",
+      "baseUrl": "http://localhost:5173",
+      "redirectUris": ["http://localhost:5173/*"],
+      "webOrigins": ["http://localhost:5173"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*"
+      },
+      "protocol": "openid-connect"
+    }
+  ],
+  "users": [
+    {
+      "username": "ssw-user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "ssw-user@example.com",
+      "firstName": "Dev",
+      "lastName": "User",
+      "credentials": [
+        { "type": "password", "value": "Sup3rS3cr3t!", "temporary": false }
+      ],
+      "realmRoles": ["user"]
+    }
+  ]
+}
