@@ -59,7 +59,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] QA: k6/Gatling load tests; contract matrix; backup/restore drill
 
 ## Phase 3 — Recommendations (X-algorithm inspired)
-- [ ] `recommendation-service` (Go): candidate gen — in-network + out-of-network (ANN/pgvector) + trends
+- [ ] `recommendation-service` (Go): candidate gen — in-network + out-of-network (ANN/pgvector) + trend. Refer to X’s post recommendation mechanism from their repository: https://github.com/xai-org/x-algorithm (Ruby base, but we are Go)
 - [ ] Embedding batch job (Vast.ai GPU nightly) → pgvector (≈ SimClusters/TwHIN)
 - [ ] Light ranker (GBDT/logistic) in Go; feature store via Redis + Kafka streams (≈ GraphJet)
 - [ ] Home Mixer: blend in/out-network + ads + who-to-follow; diversity + visibility filters; dedup
