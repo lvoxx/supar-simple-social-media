@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.lvoxx.sssm</groupId>
+        <artifactId>sssm-java-parent</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+        <relativePath>../../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>sssm-events</artifactId>
+    <name>SSSM Common :: Events</name>
+    <description>Generated Java classes for the cross-service event/DTO contracts. The .proto files
+        in schemas/ are the SINGLE source of truth (shared with the Go services); this module
+        compiles them to Java with protoc so Java services serialize the exact same wire format —
+        no hand-written copy, no drift. Plain Maven module: a contract library has no official
+        initializer. Versions inherited from the reactor parent.</description>
+
+    <properties>
+        <!-- Pin protoc and the runtime to the same version so generated code and protobuf-java
+             never mismatch. (The Spring Boot 4.1 BOM does not expose a protobuf.version property.) -->
+        <protobuf.version>4.29.3</protobuf.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+            <version>${protobuf.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <!-- os-maven-plugin exposes ${os.detected.classifier} so the right protoc binary is
+             resolved from Maven Central for the current platform. -->
+        <extensions>
+            <extension>
+                <groupId>kr.motd.maven</groupId>
+                <artifactId>os-maven-plugin</artifactId>
+                <version>1.7.1</version>
+            </extension>
+        </extensions>
+        <plugins>
+            <plugin>
+                <groupId>org.xolstice.maven.plugins</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+                <version>0.6.1</version>
+                <configuration>
+                    <!-- protoc version pinned to the BOM-managed protobuf-java so the generated
+                         code and the runtime never mismatch. -->
+                    <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
+                    <!-- The .proto files live once in schemas/; this module reuses them rather
+                         than copying. (apps/java/common/sssm-events -> repo root -> schemas/proto) -->
+                    <protoSourceRoot>${project.basedir}/../../../../schemas/proto</protoSourceRoot>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- Re-parented to the apps/java reactor: shared versions/plugins/Java level come from here. -->
+	<parent>
+		<groupId>com.lvoxx.sssm</groupId>
+		<artifactId>sssm-java-parent</artifactId>
+		<version>0.1.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>post-service</artifactId>
+	<name>post-service</name>
+	<description>Post / thread CRUD with a transactional outbox that publishes post events to Kafka.</description>
+
+	<dependencies>
+		<!-- Shared JPA + PostgreSQL stack (apps/java/starters/sssm-postgres-starter) -->
+		<dependency>
+			<groupId>com.lvoxx.sssm</groupId>
+			<artifactId>sssm-postgres-starter</artifactId>
+		</dependency>
+		<!-- Shared cross-service value types: ApiError (apps/java/common/sssm-common-core) -->
+		<dependency>
+			<groupId>com.lvoxx.sssm</groupId>
+			<artifactId>sssm-common-core</artifactId>
+		</dependency>
+		<!-- Generated Protobuf event classes shared with the Go services (apps/java/common/sssm-events) -->
+		<dependency>
+			<groupId>com.lvoxx.sssm</groupId>
+			<artifactId>sssm-events</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-actuator</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
+		<!-- Base security only. This service does NOT decode JWTs: the gateway sidecar performs
+		     token validation and forwards identity via X-Auth-* headers (see ADR-0003). -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security</artifactId>
+		</dependency>
+		<!-- The transactional outbox relay publishes serialized events to Kafka. -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webmvc-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-security-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<!-- Testcontainers (Postgres) for *IT integration tests run in the verify phase. Versions
+		     are managed by the Spring Boot BOM (Testcontainers 2.x: artifacts are prefixed
+		     `testcontainers-`). -->
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-postgresql</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>testcontainers-junit-jupiter</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<!-- Copy the infrastructure-owned migration onto the test classpath so integration tests
+		     validate the JPA mappings against the REAL baseline schema (single source of truth in
+		     deploy/migrations), never a hand-maintained copy that could drift. -->
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+			</testResource>
+			<testResource>
+				<directory>${project.basedir}/../../../deploy/migrations/post-service</directory>
+				<targetPath>db/migration</targetPath>
+				<includes>
+					<include>*.sql</include>
+				</includes>
+			</testResource>
+		</testResources>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<!-- Integration tests (*IT) require Docker (Testcontainers Postgres), so they run in the
+			     verify phase via failsafe and stay out of the Docker-free `test` phase (surefire). -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>integration-test</goal>
+							<goal>verify</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+</project>

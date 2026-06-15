@@ -1,0 +1,8 @@
+# Test overrides. The outbox relay (and its Kafka topic/admin wiring) is disabled so integration
+# tests never reach for a broker — the relay is unit-tested separately with a mocked KafkaTemplate.
+sssm:
+  outbox:
+    enabled: false
+    topic: sssm.post-events
+    poll-interval: PT1S
+    batch-size: 100

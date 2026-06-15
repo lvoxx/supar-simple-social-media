@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package sssm.event.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/lvoxx/sssm/schemas/gen/go/sssm/event/v1;eventv1";
+option java_package = "com.lvoxx.sssm.event.v1";
+option java_multiple_files = true;
+
+// Emitted by post-service (via transactional outbox) when a post is created. Consumed by
+// timeline-service (fan-out), search-service (indexing), and recommendation-service (candidates).
+message PostCreated {
+  string post_id = 1;
+  string author_id = 2;
+  string text = 3;
+  repeated string media_ids = 4;
+  string reply_to_post_id = 5;     // empty when not a reply
+  google.protobuf.Timestamp created_at = 6;
+}
+
+// Emitted when a post is deleted; consumers remove it from feeds and indexes.
+message PostDeleted {
+  string post_id = 1;
+  string author_id = 2;
+  google.protobuf.Timestamp deleted_at = 3;
+}
+
+// Emitted by engagement-service on like/unlike; feeds the real-time ranking features.
+message PostEngagement {
+  string post_id = 1;
+  string actor_id = 2;
+  EngagementType type = 3;
+  google.protobuf.Timestamp occurred_at = 4;
+}
+
+enum EngagementType {
+  ENGAGEMENT_TYPE_UNSPECIFIED = 0;
+  ENGAGEMENT_TYPE_LIKE = 1;
+  ENGAGEMENT_TYPE_UNLIKE = 2;
+  ENGAGEMENT_TYPE_REPOST = 3;
+  ENGAGEMENT_TYPE_VIEW = 4;
+}

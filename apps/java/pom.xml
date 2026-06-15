@@ -27,8 +27,10 @@
 
     <modules>
         <module>common/sssm-common-core</module>
+        <module>common/sssm-events</module>
         <module>starters/sssm-postgres-starter</module>
         <module>user-service</module>
+        <module>post-service</module>
     </modules>
 
     <dependencyManagement>
@@ -36,6 +38,11 @@
             <dependency>
                 <groupId>com.lvoxx.sssm</groupId>
                 <artifactId>sssm-common-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.lvoxx.sssm</groupId>
+                <artifactId>sssm-events</artifactId>
                 <version>${project.version}</version>
             </dependency>
             <dependency>

@@ -7,21 +7,21 @@ services only where ops pain outweighs cost, and eliminate egress fees.
 ## Topology
 
 ```
-                 ┌──────── Cloudflare (WAF / DDoS / CDN / cache) ────────┐
-   Web (Vue)─────┤                                                        │
-   Mobile (Flutter)┤                                media → Cloudflare R2 │ (zero egress)
-                 ▼                                  imgproxy / HLS        ▼
-            AWS ALB → NGINX Ingress (EKS: 3× t3.large, spot/savings)
-                 │
-   ┌─────────────┴──────────────────────────────┬─────────────────────────────┐
-   │ Spring Boot (Java 25) — CRUD/tx/admin       │ Gin (Go 1.26.3) — hot path   │
-   │ user · post · media · ad                    │ timeline · recommendation    │
-   │ admin-console · ad-console · creator-dash   │ notification · messaging     │
-   │                                             │ engagement · search          │
-   └─────────────┬───────────────────────────────┴──────────────┬──────────────┘
-                 │ transactional outbox                          │
-            Kafka 4.1 (KRaft, self-hosted) — event backbone ─────┘
-                 │
+                   ┌──────── Cloudflare (WAF / DDoS / CDN / cache) ────────┐
+   Web (Vue)───────┤                                                       │
+   Mobile (Flutter)┤                                 media → Cloudflare R2 │ (zero egress)
+                   ▼                                  imgproxy / HLS       ▼
+                   AWS ALB → NGINX Ingress (EKS: 3× t3.large, spot/savings)
+                   │
+     ┌─────────────┴───────────────────────────────┬─────────────────────────────┐
+     │ Spring Boot (Java 25) — CRUD/tx/admin       │ Gin (Go 1.26.3) — hot path  │
+     │ user · post · media · ad                    │ timeline · recommendation   │
+     │ admin-console · ad-console · creator-dash   │ notification · messaging    │
+     │                                             │ engagement · search         │
+     └─────────────┬───────────────────────────────┴──────────────┬──────────────┘
+                   │ transactional outbox                         │
+            Kafka 4.1 (KRaft, self-hosted) — event backbone ──────┘
+                   │
    Postgres 17 (RDS, source of truth) · Redis 8 (cache/counters/feeds)
    Cassandra/Scylla (materialized feeds, P2) · OpenSearch (search)
    pgvector (rec embeddings) · ClickHouse (analytics, P4) · Keycloak (OIDC)

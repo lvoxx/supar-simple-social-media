@@ -30,6 +30,7 @@ logs:      ## tail infra logs
 
 migrate:   ## apply DB migrations via infra (Flyway) — NEVER via the app
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-user
+	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-post
 
 ## Codegen -------------------------------------------------------------------
 proto:     ## regenerate Java + Go code from schemas/

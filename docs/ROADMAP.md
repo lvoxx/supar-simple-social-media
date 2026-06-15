@@ -40,7 +40,9 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 
 ## Phase 1 — Core MVP (first cloud env)
 - [x] `user-service`: profile CRUD, follow/unfollow, Keycloak link (profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; `mvn test` green — 13 unit/web/service tests; Testcontainers integration tests (`*IT`, run in CI `verify`) validate JPA mappings against the real infra migration + the follow/pagination flow)
-- [ ] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
+- [~] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
+  - [x] Slice 1: post/thread CRUD (create/read/delete, cursor-paged author timeline + replies, reply-count denorm, gateway-trusted identity), RANGE-partitioned `posts` migration, transactional outbox → Kafka relay emitting `PostCreated`/`PostDeleted` Protobuf (shared `sssm-events` module compiles `schemas/` via protoc). `mvn test` green — 11 unit/web/relay tests; Testcontainers `*IT` (CRUD + outbox payload + pagination) run in CI `verify`
+  - [ ] Slice 2: like/repost/bookmark engagement (counts + `PostEngagement` events)
 - [ ] `timeline-service`: fan-out-on-read from Redis cache + Postgres; cursor pagination
 - [ ] `media-service` (Spring Initializr) + imgproxy: presigned upload → R2 → AVIF/WebP variants (images)
 - [ ] `apps/vue` web client: auth, compose post, home timeline, profile
