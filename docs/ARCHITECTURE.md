@@ -44,27 +44,27 @@ Other security mechanisms are also edge/identity-owned, not per-service:
 
 ## Language split
 
-| Spring Boot (Java 25) | Gin (Go 1.26.3) |
-|---|---|
-| Transactional, relational, money | High fan-out, low-latency, streaming |
-| `user`, `post`, `media`, `ad` | `timeline`, `recommendation`, `notification` |
-| `admin-console`, `ad-console` (server-side MVC) | `messaging`, `engagement`, `search` |
-| `creator-dashboard` (SSR analytics) | goroutine concurrency = cheaper per request |
+| Spring Boot (Java 25)                           | Gin (Go 1.26.3)                              |
+| ----------------------------------------------- | -------------------------------------------- |
+| Transactional, relational, money                | High fan-out, low-latency, streaming         |
+| `user`, `post`, `media`, `ad`                   | `timeline`, `recommendation`, `notification` |
+| `admin-console`, `ad-console` (server-side MVC) | `messaging`, `engagement`, `search`          |
+| `creator-dashboard` (SSR analytics)             | goroutine concurrency = cheaper per request  |
 
 See [adr/0002-spring-and-gin-language-split.md](adr/0002-spring-and-gin-language-split.md).
 
 ## Data stores
 
-| Store | Purpose |
-|---|---|
-| Postgres 17 (RDS) | Source of truth: users, posts, follows, ads, billing (posts partitioned) |
-| Redis 8 | Cache, counters, recent timelines, rate limiting, pub/sub |
-| Cassandra / ScyllaDB | Materialized home timelines (fan-out-on-write), Phase 2 |
-| OpenSearch | Search (users, posts), trends |
-| Kafka 4.1 | Event backbone via transactional outbox |
-| Cloudflare R2 | Media blobs (zero egress) |
-| pgvector → Qdrant | Recommendation embeddings |
-| ClickHouse | Analytics / ads (Phase 4; Postgres matviews earlier) |
+| Store                | Purpose                                                                  |
+| -------------------- | ------------------------------------------------------------------------ |
+| Postgres 17 (RDS)    | Source of truth: users, posts, follows, ads, billing (posts partitioned) |
+| Redis 8              | Cache, counters, recent timelines, rate limiting, pub/sub                |
+| Cassandra / ScyllaDB | Materialized home timelines (fan-out-on-write), Phase 2                  |
+| OpenSearch           | Search (users, posts), trends                                            |
+| Kafka 4.1            | Event backbone via transactional outbox                                  |
+| Cloudflare R2        | Media blobs (zero egress)                                                |
+| pgvector → Qdrant    | Recommendation embeddings                                                |
+| ClickHouse           | Analytics / ads (Phase 4; Postgres matviews earlier)                     |
 
 ## Reuse strategy
 

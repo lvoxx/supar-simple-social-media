@@ -13,6 +13,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 > Service apps NEVER migrate; they run with `ddl-auto=validate` and only read the schema.
 
 ## Cross-cutting (every phase)
+
 - [ ] New Spring services generated via Spring Initializr; Go via `go mod init`; web/mobile via official CLIs
 - [ ] Each service has a multi-stage `Dockerfile` (required for AWS/EKS deploys)
 - [ ] Shared code reused from `apps/go/common/*` (Go) and `apps/java/{starters,common}/*` (Java); no copy-paste infra
@@ -23,6 +24,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] Edge security mechanisms (gateway/Keycloak-owned, not per-service): brute-force protection (Keycloak), anti-spam/abuse (WAF + rate limit + Redis per-user write quotas), read/response caching (CDN + Redis)
 
 ## Phase 0 — Foundation (cost ~$0, local only)
+
 - [x] Centralized layout: `apps/java` (Maven reactor), `apps/go` (single module), `schemas/`, `deploy/{terraform,helm}`, `docs/` — `libs/` removed
 - [x] Spring Boot `user-service` (Spring Initializr, Boot 4.1, Java 25) re-parented to reactor `sssm-java-parent`; consumes `sssm-postgres-starter` + `sssm-common-core`
 - [x] Go `timeline-service` (`package main`) in single module `apps/go`; Gin server reusing `apps/go/common/httpx`
@@ -39,6 +41,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [~] Local dev RUNTIME verification (`make up && make migrate`, login via realm) — artifacts ready; not yet executed (needs Docker)
 
 ## Phase 1 — Core MVP (first cloud env)
+
 - [x] `user-service`: profile CRUD, follow/unfollow, Keycloak link (profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; `mvn test` green — 13 unit/web/service tests; Testcontainers integration tests (`*IT`, run in CI `verify`) validate JPA mappings against the real infra migration + the follow/pagination flow)
 - [~] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
   - [x] Slice 1: post/thread CRUD (create/read/delete, cursor-paged author timeline + replies, reply-count denorm, gateway-trusted identity), RANGE-partitioned `posts` migration, transactional outbox → Kafka relay emitting `PostCreated`/`PostDeleted` Protobuf (shared `sssm-events` module compiles `schemas/` via protoc). `mvn test` green — 11 unit/web/relay tests; Testcontainers `*IT` (CRUD + outbox payload + pagination) run in CI `verify`
@@ -52,6 +55,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] DEPLOY GATE: staging green → prod; rollback runbook verified
 
 ## Phase 2 — Scale & engagement
+
 - [ ] Cassandra/Scylla materialized timelines; hybrid fan-out (write for normal, read for celebrities)
 - [ ] `notification-service` (Go): WebSocket/SSE, Kafka consumer, push (FCM/APNs)
 - [ ] `engagement-service` (Go): like/view/repost counters in Redis, periodic flush to PG
@@ -62,6 +66,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] QA: k6/Gatling load tests; contract matrix; backup/restore drill
 
 ## Phase 3 — Recommendations (X-algorithm inspired)
+
 - [ ] `recommendation-service` (Go): candidate gen — in-network + out-of-network (ANN/pgvector) + trend. Refer to X’s post recommendation mechanism from their repository: https://github.com/xai-org/x-algorithm (Ruby base, but we are Go)
 - [ ] Embedding batch job (Vast.ai GPU nightly) → pgvector (≈ SimClusters/TwHIN)
 - [ ] Light ranker (GBDT/logistic) in Go; feature store via Redis + Kafka streams (≈ GraphJet)
@@ -71,6 +76,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] QA: recsys eval harness, feature-pipeline tests, fairness/abuse checks
 
 ## Phase 4 — Monetization & admin surfaces
+
 - [ ] `ad-service` (Spring): campaigns, budgets, targeting, pacing, billing (tx); Stripe
 - [ ] `ad-console` (Spring MVC, server-side): campaign CRUD, creative review/approval, spend reports
 - [ ] `admin-service` (Spring MVC, server-side): moderation queue, takedowns, user/role mgmt, feature flags
@@ -79,6 +85,7 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] QA: financial reconciliation tests, RBAC tests, audit logging, PII handling
 
 ## Phase 5 — Hardening & GA
+
 - [ ] Security: CodeQL SAST, OWASP ZAP DAST, Trivy, gitleaks, dependency review, pen test
 - [ ] Reliability: RDS Multi-AZ + read replica, DR runbook, backup/restore drills, chaos tests
 - [ ] SLOs + alerting + on-call; global rate limiting; spam/abuse/bot detection
@@ -88,4 +95,5 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] Release: blue/green or canary deploys, feature flags, GA sign-off
 
 ## Phase 6 - Fontend & Clients
+
 - [ ] Frontends `apps/vue` + `apps/flutter` — generated via official CLIs AFTER the Go/Java backend is complete
