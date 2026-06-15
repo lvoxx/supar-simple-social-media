@@ -25,7 +25,6 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [x] Protobuf `schemas/` (`post_events.proto`) + `buf.yaml`/`buf.gen.yaml`
 - [x] GitHub Actions `ci.yml` (java / go / proto); README, ARCHITECTURE, ADR-0001 (R2), ADR-0002 (lang split)
 - [x] Java shared modules established: `starters/sssm-postgres-starter`, `common/sssm-common-core` (publish to GitHub Packages later)
-- [ ] Frontends `apps/vue` + `apps/flutter` — generated via official CLIs AFTER the Go/Java backend is complete
 - [ ] Local dev verified: `make up`; Keycloak realm `ssw-realm` import; Flyway baseline migration
 - [ ] Pre-commit hooks, conventional commits, release-please
 
@@ -75,3 +74,6 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] Perf: Core Web Vitals budgets, media lazy-load, WCAG 2.2 AA accessibility
 - [ ] FinOps: cost vs $1–3k budget review, rightsizing, Spot ratio, anomaly alerts
 - [ ] Release: blue/green or canary deploys, feature flags, GA sign-off
+
+## Phase 6 - Fontend & Clients
+- [ ] Frontends `apps/vue` + `apps/flutter` — generated via official CLIs AFTER the Go/Java backend is complete
