@@ -1,9 +1,0 @@
-sssm:
-  security:
-    user-id-header: X-User-Id
-    roles-header: X-User-Roles
-    ip-header: X-Forwarded-For
-    anonymous-paths:
-      - /actuator/**
-      - /v3/api-docs/**
-      - /swagger-ui/**
