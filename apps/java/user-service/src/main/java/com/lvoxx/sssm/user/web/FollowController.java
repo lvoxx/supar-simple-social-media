@@ -1,14 +1,13 @@
 package com.lvoxx.sssm.user.web;
 
 import com.lvoxx.sssm.user.domain.Profile;
+import com.lvoxx.sssm.user.security.AuthenticatedUser;
 import com.lvoxx.sssm.user.service.CursorPage;
 import com.lvoxx.sssm.user.service.FollowService;
 import com.lvoxx.sssm.user.web.dto.PageResponse;
 import com.lvoxx.sssm.user.web.dto.ProfileResponse;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -20,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Follow graph endpoints nested under a target profile. {@code POST}/{@code DELETE} act as the
- * authenticated caller; the follower/following listings are public reads.
+ * authenticated caller (gateway-forwarded identity); the follower/following listings are public
+ * reads.
  */
 @RestController
 @RequestMapping("/api/v1/profiles/{username}")
@@ -34,14 +34,16 @@ public class FollowController {
 
     @PostMapping("/follow")
     @ResponseStatus(HttpStatus.CREATED)
-    public void follow(@AuthenticationPrincipal Jwt jwt, @PathVariable String username) {
-        follows.follow(callerId(jwt), username);
+    public void follow(
+            @AuthenticationPrincipal AuthenticatedUser user, @PathVariable String username) {
+        follows.follow(user.id(), username);
     }
 
     @DeleteMapping("/follow")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void unfollow(@AuthenticationPrincipal Jwt jwt, @PathVariable String username) {
-        follows.unfollow(callerId(jwt), username);
+    public void unfollow(
+            @AuthenticationPrincipal AuthenticatedUser user, @PathVariable String username) {
+        follows.unfollow(user.id(), username);
     }
 
     @GetMapping("/followers")
@@ -64,9 +66,5 @@ public class FollowController {
         return new PageResponse<>(
                 page.items().stream().map(ProfileResponse::from).toList(),
                 page.nextCursor());
-    }
-
-    private static UUID callerId(Jwt jwt) {
-        return UUID.fromString(jwt.getSubject());
     }
 }

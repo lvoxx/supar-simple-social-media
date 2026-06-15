@@ -19,7 +19,8 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [ ] Events via Protobuf in `schemas/`; DB writes via transactional outbox
 - [ ] CI: build → unit → integration (Testcontainers) → lint → SAST (CodeQL) → image scan (Trivy) → push (GHCR) → ArgoCD
 - [ ] Coverage gate (≥70% → 80%); no critical CVEs; Terraform plan + tfsec/checkov on infra PRs
-- [ ] Every endpoint: authn (Keycloak/OIDC) + rate-limit + structured log + OTel trace + Prometheus metric
+- [ ] Authn at the **gateway sidecar** (validates Keycloak/OIDC token, forwards `X-Auth-*` identity headers); services NEVER decode JWTs (ADR-0003). Every endpoint also: rate-limit + structured log + OTel trace + Prometheus metric
+- [ ] Edge security mechanisms (gateway/Keycloak-owned, not per-service): brute-force protection (Keycloak), anti-spam/abuse (WAF + rate limit + Redis per-user write quotas), read/response caching (CDN + Redis)
 
 ## Phase 0 — Foundation (cost ~$0, local only)
 - [x] Centralized layout: `apps/java` (Maven reactor), `apps/go` (single module), `schemas/`, `deploy/{terraform,helm}`, `docs/` — `libs/` removed
@@ -31,14 +32,14 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 - [x] GitHub Actions `ci.yml` (java / go / proto); README, ARCHITECTURE, ADR-0001 (R2), ADR-0002 (lang split)
 - [x] Java shared modules established: `starters/sssm-postgres-starter`, `common/sssm-common-core` (publish to GitHub Packages later)
 - [x] Infra-owned DB init: `deploy/migrations/user-service/V1__baseline.sql` (profiles + follows) applied by `docker/docker-compose.flyway.yml` via `make migrate`; app de-Flyway'd (starter ships no migration tooling, `ddl-auto=validate`)
-- [x] `user-service` runtime config (`application.yml`): datasource (schema `sssm`), OIDC resource server → realm `ssw-realm`, actuator/prometheus, port 8081
+- [x] `user-service` runtime config (`application.yml`): datasource (schema `sssm`), actuator/prometheus, port 8081 (authn moved to gateway sidecar — no in-service OIDC resource server, see ADR-0003)
 - [x] Keycloak realm import `docker/keycloak/ssw-realm.json` (roles user/creator/admin, PKCE web client `sssm-web`, dev user)
 - [x] Pre-commit hooks (`.pre-commit-config.yaml`: whitespace/yaml/json/gitleaks/gofmt), conventional commits (commit-msg hook), release-please (`release-please-config.json` + manifest + workflow)
 - [ ] Frontends `apps/vue` + `apps/flutter` — generated via official CLIs AFTER the Go/Java backend is complete
 - [~] Local dev RUNTIME verification (`make up && make migrate`, login via realm) — artifacts ready; not yet executed (needs Docker)
 
 ## Phase 1 — Core MVP (first cloud env)
-- [ ] `user-service`: profile CRUD, follow/unfollow, Keycloak link
+- [~] `user-service`: profile CRUD, follow/unfollow, Keycloak link (impl done — profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; pending: build/test run + integration tests)
 - [ ] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
 - [ ] `timeline-service`: fan-out-on-read from Redis cache + Postgres; cursor pagination
 - [ ] `media-service` (Spring Initializr) + imgproxy: presigned upload → R2 → AVIF/WebP variants (images)

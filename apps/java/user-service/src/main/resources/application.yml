@@ -16,12 +16,9 @@ spring:
       hibernate:
         jdbc:
           time_zone: UTC
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          # Keycloak realm `ssw-realm` (see docker/keycloak/ssw-realm.json).
-          issuer-uri: ${KEYCLOAK_ISSUER_URI:http://localhost:8080/realms/ssw-realm}
+# Authentication is performed by the gateway sidecar, which validates the Keycloak token and
+# forwards identity via X-Auth-* headers. This service is NOT an OAuth2 resource server and has no
+# issuer-uri / JWT decoding (see docs/adr/0003-gateway-sidecar-authn.md).
 
 server:
   # 8080 is taken by Keycloak in local dev.

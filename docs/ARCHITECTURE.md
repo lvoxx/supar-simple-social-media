@@ -27,6 +27,21 @@ services only where ops pain outweighs cost, and eliminate egress fees.
    pgvector (rec embeddings) · ClickHouse (analytics, P4) · Keycloak (OIDC)
 ```
 
+## Authentication & edge security
+
+Authentication is handled at the edge, **not** inside services. A **gateway sidecar** validates the
+Keycloak (OIDC) access token once and forwards the identity to downstream services as trusted
+headers — `X-Auth-Subject` (Keycloak user id), `X-Auth-Username`, `X-Auth-Roles`. Services never
+decode JWTs; they run a thin pre-auth filter that trusts these headers (the service subnet is only
+reachable through the gateway, which strips any client-supplied `X-Auth-*`). See
+[adr/0003-gateway-sidecar-authn.md](adr/0003-gateway-sidecar-authn.md).
+
+Other security mechanisms are also edge/identity-owned, not per-service:
+
+- **Brute-force protection**: Keycloak built-in brute-force detection + gateway rate limiting on auth routes.
+- **Anti-spam / abuse**: Cloudflare WAF + gateway rate limiting, plus per-user write quotas (Redis token bucket) on expensive mutations.
+- **Caching**: Cloudflare/CDN + gateway response caching; hot reads (e.g. profiles) cached in Redis.
+
 ## Language split
 
 | Spring Boot (Java 25) | Gin (Go 1.26.3) |

@@ -1,14 +1,13 @@
 package com.lvoxx.sssm.user.web;
 
+import com.lvoxx.sssm.user.security.AuthenticatedUser;
 import com.lvoxx.sssm.user.service.ProfileService;
 import com.lvoxx.sssm.user.web.dto.CreateProfileRequest;
 import com.lvoxx.sssm.user.web.dto.ProfileResponse;
 import com.lvoxx.sssm.user.web.dto.UpdateProfileRequest;
 import jakarta.validation.Valid;
-import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,7 +20,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Profile CRUD. Reads ({@code GET /{username}}) are public; everything scoped to "me" is derived
- * from the authenticated JWT subject (the Keycloak user id) and requires authentication.
+ * from the {@link AuthenticatedUser} (the gateway-forwarded Keycloak identity) and requires
+ * authentication.
  */
 @RestController
 @RequestMapping("/api/v1/profiles")
@@ -36,13 +36,14 @@ public class ProfileController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public ProfileResponse create(
-            @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreateProfileRequest req) {
-        return ProfileResponse.from(profiles.create(callerId(jwt), req));
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody CreateProfileRequest req) {
+        return ProfileResponse.from(profiles.create(user.id(), req));
     }
 
     @GetMapping("/me")
-    public ProfileResponse me(@AuthenticationPrincipal Jwt jwt) {
-        return ProfileResponse.from(profiles.getByKeycloakId(callerId(jwt)));
+    public ProfileResponse me(@AuthenticationPrincipal AuthenticatedUser user) {
+        return ProfileResponse.from(profiles.getByKeycloakId(user.id()));
     }
 
     @GetMapping("/{username}")
@@ -52,18 +53,14 @@ public class ProfileController {
 
     @PatchMapping("/me")
     public ProfileResponse update(
-            @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody UpdateProfileRequest req) {
-        return ProfileResponse.from(profiles.update(callerId(jwt), req));
+            @AuthenticationPrincipal AuthenticatedUser user,
+            @Valid @RequestBody UpdateProfileRequest req) {
+        return ProfileResponse.from(profiles.update(user.id(), req));
     }
 
     @DeleteMapping("/me")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@AuthenticationPrincipal Jwt jwt) {
-        profiles.delete(callerId(jwt));
-    }
-
-    /** The Keycloak user id is the JWT {@code sub} claim. */
-    private static UUID callerId(Jwt jwt) {
-        return UUID.fromString(jwt.getSubject());
+    public void delete(@AuthenticationPrincipal AuthenticatedUser user) {
+        profiles.delete(user.id());
     }
 }
