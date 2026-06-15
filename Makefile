@@ -28,21 +28,22 @@ proto:     ## regenerate Java + Go code from schemas/
 	cd schemas && buf generate
 
 ## Build & test --------------------------------------------------------------
+## Java is a Maven reactor (apps/java/pom.xml); Go is a single module (apps/go/go.mod).
 build: build-java build-go      ## build everything
 
 build-java:
-	mvn -q -T1C -f pom.xml install -DskipTests
+	@cd apps/java && ./mvnw -B -q clean package -DskipTests
 
 build-go:
-	cd libs/gokit && go build ./...
+	@cd apps/go && go build ./...
 
 test: test-java test-go         ## test everything
 
 test-java:
-	mvn -q -f pom.xml test
+	@cd apps/java && ./mvnw -B -q test
 
 test-go:
-	cd libs/gokit && go test ./...
+	@cd apps/go && go test ./...
 
 fmt:       ## format Go code
-	cd libs/gokit && gofmt -w .
+	gofmt -w apps/go

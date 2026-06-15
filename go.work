@@ -1,7 +1,0 @@
-go 1.26.3
-
-use ./libs/gokit
-
-// apps/go/* modules are added here as they are created (Phase 1+):
-//   use ./apps/go/timeline-service
-//   use ./apps/go/notification-service

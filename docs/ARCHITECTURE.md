@@ -8,8 +8,8 @@ services only where ops pain outweighs cost, and eliminate egress fees.
 
 ```
                  ┌──────── Cloudflare (WAF / DDoS / CDN / cache) ────────┐
-   Web (Next.js)─┤                                                        │
-   Mobile (later)┤                                  media → Cloudflare R2 │ (zero egress)
+   Web (Vue)─────┤                                                        │
+   Mobile (Flutter)┤                                media → Cloudflare R2 │ (zero egress)
                  ▼                                  imgproxy / HLS        ▼
             AWS ALB → NGINX Ingress (EKS: 3× t3.large, spot/savings)
                  │
@@ -53,10 +53,13 @@ See [adr/0002-spring-and-gin-language-split.md](adr/0002-spring-and-gin-language
 
 ## Reuse strategy
 
-- **Java starters** (`libs/java-starters/*`, published to GitHub Packages): `web`, `security`,
-  `data`, `kafka`, `observability`. A new CRUD service = parent POM + a few starters.
-- **Go kit** (`libs/gokit`): `httpx` (Gin middleware), `config`, `observability`, `kafkax`,
-  `redisx`, `pgx`.
+- **Java** is a Maven reactor at `apps/java` (`pom.xml` is the parent): services are Spring
+  Initializr modules; shared code lives in `apps/java/starters/*` (Spring Boot starters, e.g.
+  `sssm-postgres-starter`) and `apps/java/common/*` (libraries, e.g. `sssm-common-core`). Shared
+  versions and plugins are set once in the parent POM.
+- **Go** is a single module at `apps/go` (`go.mod`): each service is a `package main` subdir
+  (e.g. `timeline-service/`); shared packages live under `apps/go/common/*` (e.g. `common/httpx`).
+  One `go.mod` = one place to manage dependencies.
 - **Cross-language glue**: event/DTO schemas live once as **Protobuf in `schemas/`**, codegen for
   both Java and Go. One source of truth; services cannot drift.
 

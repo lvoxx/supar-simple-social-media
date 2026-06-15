@@ -1,0 +1,5 @@
+# Build context for Go service images is apps/go (the single Go module).
+**/Dockerfile
+.dockerignore
+**/*_test.go
+*.md

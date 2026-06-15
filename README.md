@@ -13,18 +13,20 @@ production-grade on a **$1,000–3,000/month** infrastructure budget.
 
 ```
 apps/
-  java/            Spring Boot services (user, post, media, ad, admin-console, ad-console, creator-dashboard)
-  go/              Gin services (timeline, recommendation, notification, messaging, engagement, search)
-libs/
-  java-starters/   Reusable Spring Boot starters (web, security, data, kafka, observability)
-  gokit/           Reusable Go packages (httpx, config, observability, kafkax, redisx, pgx)
-schemas/           Protobuf event/DTO schemas — single source of truth, codegen for Java + Go
+  java/                  Maven reactor — apps/java/pom.xml manages ALL Java modules in one place
+    user-service/          Spring Boot service (generated via Spring Initializr)
+    starters/              Shared Spring Boot starters (e.g. sssm-postgres-starter)
+    common/                Shared library modules (e.g. sssm-common-core)
+  go/                    Single Go module — apps/go/go.mod manages ALL Go deps in one place
+    timeline-service/      Gin service (package main)
+    common/                Shared Go packages (e.g. common/httpx)
+  vue/ , flutter/        Web (Vue) + mobile (Flutter) — added AFTER the backend, via official CLIs
+schemas/               Protobuf event/DTO schemas — single source of truth, codegen for Java + Go
 deploy/
-  terraform/       AWS infrastructure as code
-  helm/            Kubernetes workload charts
-web/               Next.js web client
-docker/            Local-dev infra (Postgres, Redis, Kafka, Cassandra, OpenSearch, Keycloak)
-docs/              Architecture & ADRs
+  terraform/           AWS infrastructure as code
+  helm/                Kubernetes workload charts
+docker/                Local-dev infra (Postgres, Redis, Kafka, Cassandra, OpenSearch, Keycloak)
+docs/                  Architecture, ADRs, ROADMAP (the build checklist)
 ```
 
 ## Quick start (local dev)
@@ -40,7 +42,7 @@ make down      # stop local infra
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — system design
 - [docs/adr/](docs/adr/) — architecture decision records
-- Phased build plan is tracked in the Claude Code project memory (`sssm-build-checklist`).
+- [docs/ROADMAP.md](docs/ROADMAP.md) — phased build checklist (tracked in-repo)
 
 ## License
 

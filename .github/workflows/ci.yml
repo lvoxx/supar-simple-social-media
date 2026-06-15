@@ -20,8 +20,11 @@ jobs:
           distribution: temurin
           java-version: '25'
           cache: maven
-      - name: Build and test
-        run: mvn -B -f pom.xml verify
+      - name: Build and test (Maven reactor)
+        run: |
+          cd apps/java
+          chmod +x mvnw
+          ./mvnw -B verify
 
   go:
     name: Go (build + test)
@@ -32,11 +35,9 @@ jobs:
         with:
           go-version: '1.26.3'
       - name: Build
-        working-directory: libs/gokit
-        run: go build ./...
+        run: cd apps/go && go build ./...
       - name: Test
-        working-directory: libs/gokit
-        run: go test ./...
+        run: cd apps/go && go test ./...
 
   proto:
     name: Protobuf (lint + breaking)
