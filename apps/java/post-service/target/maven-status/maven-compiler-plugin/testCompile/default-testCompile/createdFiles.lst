@@ -1,6 +1,0 @@
-com\lvoxx\sssm\post\outbox\OutboxRelayTest.class
-com\lvoxx\sssm\post\service\PostServiceTest.class
-com\lvoxx\sssm\post\web\PostControllerTest.class
-com\lvoxx\sssm\post\PostServiceApplicationIT.class
-com\lvoxx\sssm\post\PostFlowIT.class
-com\lvoxx\sssm\post\support\PostgresIntegrationTest.class

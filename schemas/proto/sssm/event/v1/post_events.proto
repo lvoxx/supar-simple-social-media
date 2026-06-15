@@ -26,7 +26,9 @@ message PostDeleted {
   google.protobuf.Timestamp deleted_at = 3;
 }
 
-// Emitted by engagement-service on like/unlike; feeds the real-time ranking features.
+// Emitted (via the post-service transactional outbox) on every engagement add/remove —
+// like/unlike, repost/unrepost, bookmark/unbookmark. Feeds the real-time ranking features and the
+// engagement-service counters in Phase 2.
 message PostEngagement {
   string post_id = 1;
   string actor_id = 2;
@@ -40,4 +42,8 @@ enum EngagementType {
   ENGAGEMENT_TYPE_UNLIKE = 2;
   ENGAGEMENT_TYPE_REPOST = 3;
   ENGAGEMENT_TYPE_VIEW = 4;
+  // Appended (proto3 enums are open; new numbers are backward-compatible with existing consumers).
+  ENGAGEMENT_TYPE_UNREPOST = 5;
+  ENGAGEMENT_TYPE_BOOKMARK = 6;
+  ENGAGEMENT_TYPE_UNBOOKMARK = 7;
 }

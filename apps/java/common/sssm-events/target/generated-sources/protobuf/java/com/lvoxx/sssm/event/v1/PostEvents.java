@@ -61,13 +61,15 @@ public final class PostEvents {
       "\n\007post_id\030\001 \001(\t\022\020\n\010actor_id\030\002 \001(\t\022+\n\004typ" +
       "e\030\003 \001(\0162\035.sssm.event.v1.EngagementType\022/" +
       "\n\013occurred_at\030\004 \001(\0132\032.google.protobuf.Ti" +
-      "mestamp*\235\001\n\016EngagementType\022\037\n\033ENGAGEMENT" +
+      "mestamp*\371\001\n\016EngagementType\022\037\n\033ENGAGEMENT" +
       "_TYPE_UNSPECIFIED\020\000\022\030\n\024ENGAGEMENT_TYPE_L" +
       "IKE\020\001\022\032\n\026ENGAGEMENT_TYPE_UNLIKE\020\002\022\032\n\026ENG" +
       "AGEMENT_TYPE_REPOST\020\003\022\030\n\024ENGAGEMENT_TYPE" +
-      "_VIEW\020\004BW\n\027com.lvoxx.sssm.event.v1P\001Z:gi" +
-      "thub.com/lvoxx/sssm/schemas/gen/go/sssm/" +
-      "event/v1;eventv1b\006proto3"
+      "_VIEW\020\004\022\034\n\030ENGAGEMENT_TYPE_UNREPOST\020\005\022\034\n" +
+      "\030ENGAGEMENT_TYPE_BOOKMARK\020\006\022\036\n\032ENGAGEMEN" +
+      "T_TYPE_UNBOOKMARK\020\007BW\n\027com.lvoxx.sssm.ev" +
+      "ent.v1P\001Z:github.com/lvoxx/sssm/schemas/" +
+      "gen/go/sssm/event/v1;eventv1b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,

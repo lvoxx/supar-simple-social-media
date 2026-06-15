@@ -49,6 +49,8 @@ public abstract class PostgresIntegrationTest {
             }
             ScriptUtils.executeSqlScript(
                     conn, new ClassPathResource("db/migration/V1__baseline.sql"));
+            ScriptUtils.executeSqlScript(
+                    conn, new ClassPathResource("db/migration/V2__engagement.sql"));
         } catch (Exception e) {
             throw new IllegalStateException("Failed to apply baseline migration to test DB", e);
         }

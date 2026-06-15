@@ -7,7 +7,9 @@ package com.lvoxx.sssm.event.v1;
 
 /**
  * <pre>
- * Emitted by engagement-service on like/unlike; feeds the real-time ranking features.
+ * Emitted (via the post-service transactional outbox) on every engagement add/remove —
+ * like/unlike, repost/unrepost, bookmark/unbookmark. Feeds the real-time ranking features and the
+ * engagement-service counters in Phase 2.
  * </pre>
  *
  * Protobuf type {@code sssm.event.v1.PostEngagement}
@@ -366,7 +368,9 @@ private static final long serialVersionUID = 0L;
   }
   /**
    * <pre>
-   * Emitted by engagement-service on like/unlike; feeds the real-time ranking features.
+   * Emitted (via the post-service transactional outbox) on every engagement add/remove —
+   * like/unlike, repost/unrepost, bookmark/unbookmark. Feeds the real-time ranking features and the
+   * engagement-service counters in Phase 2.
    * </pre>
    *
    * Protobuf type {@code sssm.event.v1.PostEngagement}

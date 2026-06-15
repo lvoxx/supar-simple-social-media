@@ -53,4 +53,30 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     @Modifying
     @Query("update Post p set p.replyCount = p.replyCount - 1 where p.id = :id and p.replyCount > 0")
     void decrementReplyCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.likeCount = p.likeCount + 1 where p.id = :id")
+    void incrementLikeCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.likeCount = p.likeCount - 1 where p.id = :id and p.likeCount > 0")
+    void decrementLikeCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.repostCount = p.repostCount + 1 where p.id = :id")
+    void incrementRepostCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.repostCount = p.repostCount - 1 "
+            + "where p.id = :id and p.repostCount > 0")
+    void decrementRepostCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.bookmarkCount = p.bookmarkCount + 1 where p.id = :id")
+    void incrementBookmarkCount(@Param("id") UUID id);
+
+    @Modifying
+    @Query("update Post p set p.bookmarkCount = p.bookmarkCount - 1 "
+            + "where p.id = :id and p.bookmarkCount > 0")
+    void decrementBookmarkCount(@Param("id") UUID id);
 }

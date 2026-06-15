@@ -43,9 +43,9 @@ reviewed) independently. Status: `[ ]` todo · `[~]` in progress · `[x]` done.
 ## Phase 1 — Core MVP (first cloud env)
 
 - [x] `user-service`: profile CRUD, follow/unfollow, Keycloak link (profile CRUD, follow/unfollow with denormalized counts, cursor-paged follower/following, gateway-trusted identity; `mvn test` green — 13 unit/web/service tests; Testcontainers integration tests (`*IT`, run in CI `verify`) validate JPA mappings against the real infra migration + the follow/pagination flow)
-- [~] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
+- [x] `post-service` (Spring Initializr): post/thread CRUD, like/repost/bookmark (tx + outbox→Kafka), partitioning
   - [x] Slice 1: post/thread CRUD (create/read/delete, cursor-paged author timeline + replies, reply-count denorm, gateway-trusted identity), RANGE-partitioned `posts` migration, transactional outbox → Kafka relay emitting `PostCreated`/`PostDeleted` Protobuf (shared `sssm-events` module compiles `schemas/` via protoc). `mvn test` green — 11 unit/web/relay tests; Testcontainers `*IT` (CRUD + outbox payload + pagination) run in CI `verify`
-  - [ ] Slice 2: like/repost/bookmark engagement (counts + `PostEngagement` events)
+  - [x] Slice 2: like/repost/bookmark engagement — idempotent toggle endpoints (`PUT`/`DELETE` `/api/v1/posts/{id}/{like,repost,bookmark}`, gateway-trusted actor), denormalized counts on `posts`, one `post_engagements` row per `(post, actor, kind)` (composite PK = idempotency), each add/remove emits a `PostEngagement` Protobuf via the transactional outbox (enum extended with UNREPOST/BOOKMARK/UNBOOKMARK). `V2__engagement.sql` migration; `mvn test` green — 7 unit + 4 web engagement tests; `EngagementFlowIT` (counts/idempotency/outbox payload) runs in CI `verify`
 - [ ] `timeline-service`: fan-out-on-read from Redis cache + Postgres; cursor pagination
 - [ ] `media-service` (Spring Initializr) + imgproxy: presigned upload → R2 → AVIF/WebP variants (images)
 - [ ] `apps/vue` web client: auth, compose post, home timeline, profile

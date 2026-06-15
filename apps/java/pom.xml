@@ -33,6 +33,19 @@
         <module>post-service</module>
     </modules>
 
+    <!-- Lombok is provided/optional so it never leaks into runtime or downstream module APIs; the
+         version is managed by the Spring Boot BOM. Reused project-wide for @Getter /
+         @RequiredArgsConstructor / @Slf4j (see CONTRIBUTING.md "Conventions" for the guardrails:
+         records stay records, and @Data/@Setter/@EqualsAndHashCode/@ToString are banned on @Entity). -->
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>

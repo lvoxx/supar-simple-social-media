@@ -30,6 +30,22 @@ public enum EngagementType
    * <code>ENGAGEMENT_TYPE_VIEW = 4;</code>
    */
   ENGAGEMENT_TYPE_VIEW(4),
+  /**
+   * <pre>
+   * Appended (proto3 enums are open; new numbers are backward-compatible with existing consumers).
+   * </pre>
+   *
+   * <code>ENGAGEMENT_TYPE_UNREPOST = 5;</code>
+   */
+  ENGAGEMENT_TYPE_UNREPOST(5),
+  /**
+   * <code>ENGAGEMENT_TYPE_BOOKMARK = 6;</code>
+   */
+  ENGAGEMENT_TYPE_BOOKMARK(6),
+  /**
+   * <code>ENGAGEMENT_TYPE_UNBOOKMARK = 7;</code>
+   */
+  ENGAGEMENT_TYPE_UNBOOKMARK(7),
   UNRECOGNIZED(-1),
   ;
 
@@ -62,6 +78,22 @@ public enum EngagementType
    * <code>ENGAGEMENT_TYPE_VIEW = 4;</code>
    */
   public static final int ENGAGEMENT_TYPE_VIEW_VALUE = 4;
+  /**
+   * <pre>
+   * Appended (proto3 enums are open; new numbers are backward-compatible with existing consumers).
+   * </pre>
+   *
+   * <code>ENGAGEMENT_TYPE_UNREPOST = 5;</code>
+   */
+  public static final int ENGAGEMENT_TYPE_UNREPOST_VALUE = 5;
+  /**
+   * <code>ENGAGEMENT_TYPE_BOOKMARK = 6;</code>
+   */
+  public static final int ENGAGEMENT_TYPE_BOOKMARK_VALUE = 6;
+  /**
+   * <code>ENGAGEMENT_TYPE_UNBOOKMARK = 7;</code>
+   */
+  public static final int ENGAGEMENT_TYPE_UNBOOKMARK_VALUE = 7;
 
 
   public final int getNumber() {
@@ -93,6 +125,9 @@ public enum EngagementType
       case 2: return ENGAGEMENT_TYPE_UNLIKE;
       case 3: return ENGAGEMENT_TYPE_REPOST;
       case 4: return ENGAGEMENT_TYPE_VIEW;
+      case 5: return ENGAGEMENT_TYPE_UNREPOST;
+      case 6: return ENGAGEMENT_TYPE_BOOKMARK;
+      case 7: return ENGAGEMENT_TYPE_UNBOOKMARK;
       default: return null;
     }
   }

@@ -1,11 +1,14 @@
 package com.lvoxx.sssm.post.outbox;
 
 import com.google.protobuf.Timestamp;
+import com.lvoxx.sssm.event.v1.EngagementType;
 import com.lvoxx.sssm.event.v1.PostCreated;
 import com.lvoxx.sssm.event.v1.PostDeleted;
+import com.lvoxx.sssm.event.v1.PostEngagement;
 import com.lvoxx.sssm.post.domain.OutboxEvent;
 import com.lvoxx.sssm.post.domain.Post;
 import java.time.Instant;
+import java.util.UUID;
 
 /**
  * Builds {@link OutboxEvent} rows whose payload is a serialized Protobuf message from
@@ -19,6 +22,7 @@ public final class OutboxEventFactory {
 
     public static final String POST_CREATED = "PostCreated";
     public static final String POST_DELETED = "PostDeleted";
+    public static final String POST_ENGAGEMENT = "PostEngagement";
 
     private OutboxEventFactory() {
     }
@@ -44,6 +48,22 @@ public final class OutboxEventFactory {
                 .build();
         return new OutboxEvent(
                 AGGREGATE_TYPE, post.getId(), POST_DELETED, event.toByteArray());
+    }
+
+    /**
+     * Builds a {@link PostEngagement} event for an engagement add/remove (like/unlike,
+     * repost/unrepost, bookmark/unbookmark). The aggregate is the post, so all post events share an
+     * ordering key and topic.
+     */
+    public static OutboxEvent postEngagement(
+            UUID postId, UUID actorId, EngagementType type, Instant occurredAt) {
+        PostEngagement event = PostEngagement.newBuilder()
+                .setPostId(postId.toString())
+                .setActorId(actorId.toString())
+                .setType(type)
+                .setOccurredAt(toTimestamp(occurredAt))
+                .build();
+        return new OutboxEvent(AGGREGATE_TYPE, postId, POST_ENGAGEMENT, event.toByteArray());
     }
 
     private static Timestamp toTimestamp(Instant instant) {
