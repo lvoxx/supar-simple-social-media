@@ -31,6 +31,7 @@
         <module>starters/sssm-postgres-starter</module>
         <module>user-service</module>
         <module>post-service</module>
+        <module>media-service</module>
     </modules>
 
     <!-- Lombok is provided/optional so it never leaks into runtime or downstream module APIs; the

@@ -9,7 +9,8 @@ COMPOSE_FILES := \
 	-f $(COMPOSE_DIR)/docker-compose.kafka.yml \
 	-f $(COMPOSE_DIR)/docker-compose.cassandra.yml \
 	-f $(COMPOSE_DIR)/docker-compose.elasticsearch.yml \
-	-f $(COMPOSE_DIR)/docker-compose.keycloak.yml
+	-f $(COMPOSE_DIR)/docker-compose.keycloak.yml \
+	-f $(COMPOSE_DIR)/docker-compose.imgproxy.yml
 
 # Database initialization is INFRASTRUCTURE-OWNED, never run by the apps.
 MIGRATE_FILES := \
@@ -31,6 +32,7 @@ logs:      ## tail infra logs
 migrate:   ## apply DB migrations via infra (Flyway) — NEVER via the app
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-user
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-post
+	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-media
 
 ## Codegen -------------------------------------------------------------------
 proto:     ## regenerate Java + Go code from schemas/

@@ -1,0 +1,22 @@
+# imgproxy serves media-service's AVIF/WebP variants on demand, transcoding from the original stored
+# in R2 (S3). media-service never transcodes — it only hands clients signed imgproxy URLs.
+#
+# Source originals: imgproxy fetches s3://<bucket>/<key>. Locally point IMGPROXY_S3_ENDPOINT at your
+# S3-compatible store (the same R2/MinIO endpoint media-service uploads to). In cloud these come
+# from the deployment's secrets, and signing is enabled by setting IMGPROXY_KEY/IMGPROXY_SALT (hex)
+# to match media-service's sssm.imgproxy.{key,salt}. Left unset here so local dev uses /insecure/.
+services:
+  imgproxy:
+    image: ghcr.io/imgproxy/imgproxy:v3
+    environment:
+      - IMGPROXY_USE_S3=true
+      - IMGPROXY_S3_ENDPOINT=${R2_ENDPOINT:-http://localhost:9000}
+      - IMGPROXY_S3_REGION=${R2_REGION:-auto}
+      - AWS_ACCESS_KEY_ID=${R2_ACCESS_KEY:-dev}
+      - AWS_SECRET_ACCESS_KEY=${R2_SECRET_KEY:-dev-secret}
+      # Enable signed URLs by setting these (hex) to match media-service; unset ⇒ /insecure/ URLs.
+      - IMGPROXY_KEY=${IMGPROXY_KEY:-}
+      - IMGPROXY_SALT=${IMGPROXY_SALT:-}
+      - IMGPROXY_ENFORCE_AVIF=true
+    ports:
+      - '8888:8080'
