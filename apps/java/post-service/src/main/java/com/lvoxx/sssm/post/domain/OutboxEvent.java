@@ -8,6 +8,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -19,6 +20,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * {@code PostDeleted}) so Java and Go consumers share one wire format. Maps to the
  * infrastructure-owned {@code sssm.outbox_events} table.
  */
+@Getter
 @Entity
 @Table(name = "outbox_events")
 public class OutboxEvent {
@@ -61,33 +63,5 @@ public class OutboxEvent {
     /** Marks this event as published; dirty-checking flushes the {@code published_at} on commit. */
     public void markPublished(Instant at) {
         this.publishedAt = at;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public String getAggregateType() {
-        return aggregateType;
-    }
-
-    public UUID getAggregateId() {
-        return aggregateId;
-    }
-
-    public String getEventType() {
-        return eventType;
-    }
-
-    public byte[] getPayload() {
-        return payload;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getPublishedAt() {
-        return publishedAt;
     }
 }

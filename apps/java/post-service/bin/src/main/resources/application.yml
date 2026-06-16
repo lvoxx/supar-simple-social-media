@@ -1,0 +1,61 @@
+spring:
+  application:
+    name: post-service
+  datasource:
+    # Schema `sssm` is created and migrated by INFRASTRUCTURE (Flyway runner), never by
+    # this app. See deploy/migrations/post-service + docker/docker-compose.flyway.yml.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=sssm}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The app only validates against the infra-managed schema; it never creates it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      # The outbox stores the already-serialized Protobuf bytes, so the value is a raw byte[].
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.ByteArraySerializer
+      acks: all
+      properties:
+        enable.idempotence: true
+# Authentication is performed by the gateway sidecar, which validates the Keycloak token and
+# forwards identity via X-Auth-* headers. This service is NOT an OAuth2 resource server and has no
+# issuer-uri / JWT decoding (see docs/adr/0003-gateway-sidecar-authn.md).
+
+# Transactional outbox relay: how often the scheduled poller drains unpublished events to Kafka,
+# and how many it claims per batch.
+sssm:
+  outbox:
+    topic: ${SSSM_OUTBOX_TOPIC:sssm.post-events}
+    poll-interval: ${SSSM_OUTBOX_POLL_INTERVAL:PT1S}
+    batch-size: ${SSSM_OUTBOX_BATCH_SIZE:100}
+
+server:
+  # 8081 is user-service; this service takes 8082 (8080 is Keycloak in local dev).
+  port: ${SERVER_PORT:8082}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO

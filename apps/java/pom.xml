@@ -65,4 +65,26 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <!-- Register Lombok as a javac annotation processor for every module. Required on
+                 JDK 23+ (annotation processing is no longer auto-enabled from the classpath) and
+                 because the Spring Boot 4.1 parent does not pre-wire Lombok here. Version is managed
+                 by the Spring Boot BOM (${lombok.version}). -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>${lombok.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

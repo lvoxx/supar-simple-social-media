@@ -23,6 +23,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * carries {@code replyToPostId}; the parent's {@code replyCount} is kept in sync transactionally.
  * The engagement counts are denormalized for read speed (updated by the engagement flow).
  */
+@Getter
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -65,41 +66,5 @@ public class Post {
         this.authorId = authorId;
         this.text = text;
         this.replyToPostId = replyToPostId;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getAuthorId() {
-        return authorId;
-    }
-
-    public String getText() {
-        return text;
-    }
-
-    public UUID getReplyToPostId() {
-        return replyToPostId;
-    }
-
-    public long getReplyCount() {
-        return replyCount;
-    }
-
-    public long getLikeCount() {
-        return likeCount;
-    }
-
-    public long getRepostCount() {
-        return repostCount;
-    }
-
-    public long getBookmarkCount() {
-        return bookmarkCount;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }

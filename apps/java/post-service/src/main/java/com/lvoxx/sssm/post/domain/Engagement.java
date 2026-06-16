@@ -5,6 +5,7 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import lombok.Getter;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -17,6 +18,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * <p>The denormalized counts on {@link Post} (like/repost/bookmark) are kept in sync transactionally
  * by {@link com.lvoxx.sssm.post.service.EngagementService}.
  */
+@Getter
 @Entity
 @Table(name = "post_engagements")
 public class Engagement {
@@ -34,13 +36,5 @@ public class Engagement {
 
     public Engagement(EngagementId id) {
         this.id = id;
-    }
-
-    public EngagementId getId() {
-        return id;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }
