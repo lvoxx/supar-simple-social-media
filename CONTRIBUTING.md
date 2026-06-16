@@ -25,6 +25,15 @@ make down      # stop local infra
 - **Branches**: `feat/<scope>`, `fix/<scope>`; PRs target `main`.
 - **Reuse first**: new Spring Boot services depend on `libs/java-starters/*`; new Go services
   depend on `libs/gokit`. Do not copy-paste cross-cutting infrastructure code.
+- **Lombok (Java)**: prefer Lombok over hand-written boilerplate — `@Getter`,
+  `@RequiredArgsConstructor` (constructor injection in services/components), `@Slf4j` (logging),
+  `@Builder` where a fluent builder genuinely helps. The dependency is declared once in the reactor
+  parent (`apps/java/pom.xml`, `provided`/`optional`), so just add the annotations.
+  **Guardrails:** (1) DTOs / value types stay Java **records** — don't Lombok them. (2) On JPA
+  `@Entity` types, **only** `@Getter` is allowed; **never** `@Data`, `@Setter`,
+  `@EqualsAndHashCode` or `@ToString` (they break entity identity, force eager loading, and recurse
+  on associations) — keep entities immutable with explicit constructors. `@EqualsAndHashCode` is
+  fine on an `@Embeddable` composite-key/value object, where all-field equality is correct.
 - **Schemas**: event/DTO changes go in `schemas/` (Protobuf) and must be backward-compatible
   (enforced by `buf breaking`). Never hand-edit generated code.
 - **Every endpoint**: authn (Keycloak/OIDC) + rate limit + structured log + OTel trace +
