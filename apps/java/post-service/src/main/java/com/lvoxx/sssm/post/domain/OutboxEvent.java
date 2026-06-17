@@ -24,6 +24,7 @@ import org.hibernate.annotations.CreationTimestamp;
  */
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
 @Table(name = "outbox_events")
 public class OutboxEvent {
