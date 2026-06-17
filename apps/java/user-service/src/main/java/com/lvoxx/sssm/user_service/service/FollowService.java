@@ -1,12 +1,12 @@
-package com.lvoxx.sssm.user.service;
+package com.lvoxx.sssm.user_service.service;
 
-import com.lvoxx.sssm.user.domain.Follow;
-import com.lvoxx.sssm.user.domain.Profile;
-import com.lvoxx.sssm.user.error.BadRequestException;
-import com.lvoxx.sssm.user.error.ConflictException;
-import com.lvoxx.sssm.user.error.NotFoundException;
-import com.lvoxx.sssm.user.repository.FollowRepository;
-import com.lvoxx.sssm.user.repository.ProfileRepository;
+import com.lvoxx.sssm.user_service.domain.Follow;
+import com.lvoxx.sssm.user_service.domain.Profile;
+import com.lvoxx.sssm.user_service.error.BadRequestException;
+import com.lvoxx.sssm.user_service.error.ConflictException;
+import com.lvoxx.sssm.user_service.error.NotFoundException;
+import com.lvoxx.sssm.user_service.repository.FollowRepository;
+import com.lvoxx.sssm.user_service.repository.ProfileRepository;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Base64;

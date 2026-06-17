@@ -1,11 +1,11 @@
-package com.lvoxx.sssm.user.web;
+package com.lvoxx.sssm.user_service.web;
 
-import com.lvoxx.sssm.user.domain.Profile;
-import com.lvoxx.sssm.user.security.AuthenticatedUser;
-import com.lvoxx.sssm.user.service.CursorPage;
-import com.lvoxx.sssm.user.service.FollowService;
-import com.lvoxx.sssm.user.web.dto.PageResponse;
-import com.lvoxx.sssm.user.web.dto.ProfileResponse;
+import com.lvoxx.sssm.user_service.domain.Profile;
+import com.lvoxx.sssm.user_service.security.AuthenticatedUser;
+import com.lvoxx.sssm.user_service.service.CursorPage;
+import com.lvoxx.sssm.user_service.service.FollowService;
+import com.lvoxx.sssm.user_service.web.dto.PageResponse;
+import com.lvoxx.sssm.user_service.web.dto.ProfileResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;

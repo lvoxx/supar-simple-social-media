@@ -1,7 +1,7 @@
-package com.lvoxx.sssm.user.repository;
+package com.lvoxx.sssm.user_service.repository;
 
-import com.lvoxx.sssm.user.domain.Follow;
-import com.lvoxx.sssm.user.domain.FollowId;
+import com.lvoxx.sssm.user_service.domain.Follow;
+import com.lvoxx.sssm.user_service.domain.FollowId;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;

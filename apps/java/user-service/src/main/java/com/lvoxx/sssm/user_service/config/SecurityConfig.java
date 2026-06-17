@@ -1,6 +1,6 @@
-package com.lvoxx.sssm.user.config;
+package com.lvoxx.sssm.user_service.config;
 
-import com.lvoxx.sssm.user.security.GatewayAuthenticationFilter;
+import com.lvoxx.sssm.user_service.security.GatewayAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;

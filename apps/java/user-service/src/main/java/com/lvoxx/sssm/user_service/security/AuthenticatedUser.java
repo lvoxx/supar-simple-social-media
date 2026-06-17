@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.security;
+package com.lvoxx.sssm.user_service.security;
 
 import java.util.List;
 import java.util.UUID;

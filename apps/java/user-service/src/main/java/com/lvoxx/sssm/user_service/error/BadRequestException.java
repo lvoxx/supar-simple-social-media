@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.error;
+package com.lvoxx.sssm.user_service.error;
 
 /** Thrown on a semantically invalid request (self-follow, malformed cursor). Mapped to HTTP 400. */
 public class BadRequestException extends RuntimeException {

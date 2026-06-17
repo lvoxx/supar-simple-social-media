@@ -1,6 +1,6 @@
-package com.lvoxx.sssm.user.web.dto;
+package com.lvoxx.sssm.user_service.web.dto;
 
-import com.lvoxx.sssm.user.domain.Profile;
+import com.lvoxx.sssm.user_service.domain.Profile;
 import java.time.Instant;
 import java.util.UUID;
 

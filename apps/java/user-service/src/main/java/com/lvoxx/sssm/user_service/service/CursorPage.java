@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.service;
+package com.lvoxx.sssm.user_service.service;
 
 import java.util.List;
 

@@ -1,10 +1,10 @@
-package com.lvoxx.sssm.user.web;
+package com.lvoxx.sssm.user_service.web;
 
-import com.lvoxx.sssm.user.security.AuthenticatedUser;
-import com.lvoxx.sssm.user.service.ProfileService;
-import com.lvoxx.sssm.user.web.dto.CreateProfileRequest;
-import com.lvoxx.sssm.user.web.dto.ProfileResponse;
-import com.lvoxx.sssm.user.web.dto.UpdateProfileRequest;
+import com.lvoxx.sssm.user_service.security.AuthenticatedUser;
+import com.lvoxx.sssm.user_service.service.ProfileService;
+import com.lvoxx.sssm.user_service.web.dto.CreateProfileRequest;
+import com.lvoxx.sssm.user_service.web.dto.ProfileResponse;
+import com.lvoxx.sssm.user_service.web.dto.UpdateProfileRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;

@@ -1,6 +1,6 @@
-package com.lvoxx.sssm.user.repository;
+package com.lvoxx.sssm.user_service.repository;
 
-import com.lvoxx.sssm.user.domain.Profile;
+import com.lvoxx.sssm.user_service.domain.Profile;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -1,17 +1,17 @@
-package com.lvoxx.sssm.user;
+package com.lvoxx.sssm.user_service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.lvoxx.sssm.user.domain.Profile;
-import com.lvoxx.sssm.user.error.ConflictException;
-import com.lvoxx.sssm.user.error.NotFoundException;
-import com.lvoxx.sssm.user.repository.ProfileRepository;
-import com.lvoxx.sssm.user.service.CursorPage;
-import com.lvoxx.sssm.user.service.FollowService;
-import com.lvoxx.sssm.user.service.ProfileService;
-import com.lvoxx.sssm.user.support.PostgresIntegrationTest;
-import com.lvoxx.sssm.user.web.dto.CreateProfileRequest;
+import com.lvoxx.sssm.user_service.domain.Profile;
+import com.lvoxx.sssm.user_service.error.ConflictException;
+import com.lvoxx.sssm.user_service.error.NotFoundException;
+import com.lvoxx.sssm.user_service.repository.ProfileRepository;
+import com.lvoxx.sssm.user_service.service.CursorPage;
+import com.lvoxx.sssm.user_service.service.FollowService;
+import com.lvoxx.sssm.user_service.service.ProfileService;
+import com.lvoxx.sssm.user_service.support.PostgresIntegrationTest;
+import com.lvoxx.sssm.user_service.web.dto.CreateProfileRequest;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;

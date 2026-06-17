@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.domain;
+package com.lvoxx.sssm.user_service.domain;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

@@ -1,9 +1,9 @@
-package com.lvoxx.sssm.user.web;
+package com.lvoxx.sssm.user_service.web;
 
 import com.lvoxx.sssm.common.core.ApiError;
-import com.lvoxx.sssm.user.error.BadRequestException;
-import com.lvoxx.sssm.user.error.ConflictException;
-import com.lvoxx.sssm.user.error.NotFoundException;
+import com.lvoxx.sssm.user_service.error.BadRequestException;
+import com.lvoxx.sssm.user_service.error.ConflictException;
+import com.lvoxx.sssm.user_service.error.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.time.Instant;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.domain;
+package com.lvoxx.sssm.user_service.domain;
 
 import java.io.Serializable;
 import java.util.UUID;

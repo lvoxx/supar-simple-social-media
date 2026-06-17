@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.web.dto;
+package com.lvoxx.sssm.user_service.web.dto;
 
 import java.util.List;
 
