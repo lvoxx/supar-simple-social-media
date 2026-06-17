@@ -4,7 +4,9 @@
       "Bash(apps/java/mvnw -f apps/java/pom.xml -pl user-service -am -q -DskipTests test-compile)",
       "Bash(java -version)",
       "Bash(docker version *)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Glob(*)",
+      "Grep(*)"
     ]
   },
   "enabledPlugins": {
