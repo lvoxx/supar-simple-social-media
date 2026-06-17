@@ -1,0 +1,26 @@
+# App-of-apps. Apply this once after ArgoCD is installed; it syncs every
+# Application manifest under deploy/argocd/apps and self-heals from git.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: sssm-root
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sssm
+  source:
+    repoURL: https://github.com/lvoxx/supar-simple-social-media.git
+    targetRevision: main
+    path: deploy/argocd/apps
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

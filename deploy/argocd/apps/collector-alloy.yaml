@@ -1,0 +1,102 @@
+# Grafana Alloy — the unified collector (supersedes promtail/grafana-agent).
+# DaemonSet: tails pod logs -> Loki, and exposes an OTLP endpoint that the SSSM
+# services export traces to -> Tempo. Metrics are scraped by Prometheus directly,
+# so Alloy only handles logs + traces here.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: alloy
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sssm
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: alloy
+    targetRevision: 1.10.0 # verified latest stable
+    helm:
+      valuesObject:
+        controller:
+          type: daemonset
+        alloy:
+          # OTLP ports exposed on the alloy Service so services can push traces to
+          # http://alloy.monitoring.svc.cluster.local:4318 (or :4317 gRPC).
+          extraPorts:
+            - name: otlp-grpc
+              port: 4317
+              targetPort: 4317
+              protocol: TCP
+            - name: otlp-http
+              port: 4318
+              targetPort: 4318
+              protocol: TCP
+          configMap:
+            content: |-
+              logging {
+                level  = "info"
+                format = "logfmt"
+              }
+
+              // ---------- Logs: pod logs -> Loki ----------
+              discovery.kubernetes "pods" {
+                role = "pod"
+              }
+
+              discovery.relabel "pod_logs" {
+                targets = discovery.kubernetes.pods.targets
+                rule {
+                  source_labels = ["__meta_kubernetes_namespace"]
+                  target_label  = "namespace"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_name"]
+                  target_label  = "pod"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_container_name"]
+                  target_label  = "container"
+                }
+                rule {
+                  source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+                  target_label  = "app"
+                }
+              }
+
+              loki.source.kubernetes "pods" {
+                targets    = discovery.relabel.pod_logs.output
+                forward_to = [loki.write.default.receiver]
+              }
+
+              loki.write "default" {
+                endpoint {
+                  url = "http://loki-gateway.monitoring.svc.cluster.local/loki/api/v1/push"
+                }
+              }
+
+              // ---------- Traces: OTLP receiver -> Tempo ----------
+              otelcol.receiver.otlp "default" {
+                grpc { endpoint = "0.0.0.0:4317" }
+                http { endpoint = "0.0.0.0:4318" }
+                output {
+                  traces = [otelcol.exporter.otlp.tempo.input]
+                }
+              }
+
+              otelcol.exporter.otlp "tempo" {
+                client {
+                  endpoint = "tempo.monitoring.svc.cluster.local:4317"
+                  tls {
+                    insecure = true
+                  }
+                }
+              }
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

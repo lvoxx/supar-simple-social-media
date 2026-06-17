@@ -1,0 +1,43 @@
+# Trace store — single-binary Tempo on local disk, OTLP receivers on 4317/4318.
+# Apps export traces to Alloy, which forwards here (collector-alloy).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: tempo
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sssm
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    chart: tempo
+    targetRevision: 1.24.4 # verified latest stable (single-binary mode)
+    helm:
+      valuesObject:
+        tempo:
+          retention: 168h
+          storage:
+            trace:
+              backend: local
+              local:
+                path: /var/tempo/traces
+          receivers:
+            otlp:
+              protocols:
+                grpc:
+                  endpoint: 0.0.0.0:4317
+                http:
+                  endpoint: 0.0.0.0:4318
+        persistence:
+          enabled: true
+          size: 10Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
