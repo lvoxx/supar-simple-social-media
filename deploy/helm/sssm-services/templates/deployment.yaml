@@ -1,0 +1,67 @@
+{{- $top := . -}}
+{{- range $name, $svc := .Values.services }}
+{{- $d := $top.Values.defaults }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "sssm-services.labels" $top | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  replicas: {{ $svc.replicaCount | default $d.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ $top.Release.Name }}
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: {{ $name }}
+        app.kubernetes.io/instance: {{ $top.Release.Name }}
+        app.kubernetes.io/component: {{ $name }}
+    spec:
+      containers:
+        - name: {{ $name }}
+          image: {{ include "sssm-services.image" (list $top $name $svc) | quote }}
+          imagePullPolicy: {{ $top.Values.global.imagePullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ $svc.port }}
+          env:
+            - name: SERVER_PORT
+              value: {{ $svc.port | quote }}
+            - name: PORT
+              value: {{ $svc.port | quote }}
+            {{- if $top.Values.observability.tracing.enabled }}
+            - name: OTEL_SERVICE_NAME
+              value: {{ $name }}
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ $top.Values.observability.tracing.otlpEndpoint | quote }}
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: {{ $top.Values.observability.tracing.otlpProtocol | quote }}
+            {{- end }}
+            {{- with ($svc.env | default $d.env) }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
+          {{- with ($svc.envFrom | default $d.envFrom) }}
+          envFrom:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          livenessProbe:
+            httpGet:
+              path: {{ $svc.livenessPath | default $d.livenessPath }}
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: {{ $svc.readinessPath | default $d.readinessPath }}
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          resources:
+            {{- toYaml ($svc.resources | default $d.resources) | nindent 12 }}
+{{- end }}

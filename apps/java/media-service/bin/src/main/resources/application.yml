@@ -1,0 +1,64 @@
+spring:
+  application:
+    name: media-service
+  datasource:
+    # Schema `sssm` is created and migrated by INFRASTRUCTURE (Flyway runner), never by
+    # this app. See deploy/migrations/media-service + docker/docker-compose.flyway.yml.
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/postgres?currentSchema=sssm}
+    username: ${SPRING_DATASOURCE_USERNAME:postgres}
+    password: ${SPRING_DATASOURCE_PASSWORD:postgres}
+  jpa:
+    open-in-view: false
+    hibernate:
+      # The app only validates against the infra-managed schema; it never creates it.
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+# Authentication is performed by the gateway sidecar, which validates the Keycloak token and
+# forwards identity via X-Auth-* headers. This service is NOT an OAuth2 resource server and has no
+# issuer-uri / JWT decoding (see docs/adr/0003-gateway-sidecar-authn.md).
+
+sssm:
+  # Cloudflare R2 (S3-compatible) object store for the original uploads. Dev defaults point at a
+  # local S3-compatible endpoint; real R2 credentials are injected via env in cloud.
+  storage:
+    endpoint: ${R2_ENDPOINT:http://localhost:9000}
+    region: ${R2_REGION:auto}
+    bucket: ${R2_BUCKET:sssm-media}
+    access-key: ${R2_ACCESS_KEY:dev}
+    secret-key: ${R2_SECRET_KEY:dev-secret}
+    presign-ttl: ${R2_PRESIGN_TTL:PT15M}
+  # imgproxy serves the AVIF/WebP variants on demand. With no key/salt set (local dev) the builder
+  # emits unsigned /insecure/ URLs; set both (hex) in cloud to match imgproxy's IMGPROXY_KEY/SALT.
+  imgproxy:
+    base-url: ${IMGPROXY_BASE_URL:http://localhost:8888}
+    key: ${IMGPROXY_KEY:}
+    salt: ${IMGPROXY_SALT:}
+    source-url-prefix: ${IMGPROXY_SOURCE_PREFIX:s3://sssm-media/}
+    widths: ${IMGPROXY_WIDTHS:320,640,1280}
+    formats: ${IMGPROXY_FORMATS:avif,webp}
+
+server:
+  # 8081 user-service, 8082 post-service; this service takes 8083 (8080 is Keycloak in local dev).
+  port: ${SERVER_PORT:8083}
+  shutdown: graceful
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: when_authorized
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
