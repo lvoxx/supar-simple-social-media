@@ -1,0 +1,22 @@
+# Copy to terraform.tfvars (gitignored) and fill in. Nothing is applied until you
+# point the backend at a real S3 bucket (see backend.tf) and run terraform apply.
+
+aws_region  = "ap-southeast-1"
+environment = "staging"
+
+# --- EKS ---
+kubernetes_version  = "1.33"
+node_instance_types = ["t3.large"]
+node_capacity_type  = "SPOT"
+node_desired_size   = 3
+
+# --- RDS ---
+rds_instance_class = "db.t4g.small"
+rds_engine_version = "17.4"
+
+# --- Cloudflare ---
+# Provide cloudflare_api_token via the CLOUDFLARE_API_TOKEN env var, not here.
+cloudflare_account_id = ""
+cloudflare_zone_id    = "" # leave empty to skip DNS record creation
+domain_name           = "" # e.g. app.example.com
+alb_dns_name          = "" # fill after ingress-nginx provisions the load balancer
