@@ -1,6 +1,6 @@
-package com.lvoxx.sssm.post;
+package com.lvoxx.sssm.post_service;
 
-import com.lvoxx.sssm.post.support.PostgresIntegrationTest;
+import com.lvoxx.sssm.post_service.support.PostgresIntegrationTest;
 import org.junit.jupiter.api.Test;
 
 /**

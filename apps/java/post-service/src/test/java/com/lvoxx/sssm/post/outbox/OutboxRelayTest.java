@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.post.outbox;
+package com.lvoxx.sssm.post_service.outbox;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,8 +7,8 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.lvoxx.sssm.post.domain.OutboxEvent;
-import com.lvoxx.sssm.post.repository.OutboxRepository;
+import com.lvoxx.sssm.post_service.domain.OutboxEvent;
+import com.lvoxx.sssm.post_service.repository.OutboxRepository;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;

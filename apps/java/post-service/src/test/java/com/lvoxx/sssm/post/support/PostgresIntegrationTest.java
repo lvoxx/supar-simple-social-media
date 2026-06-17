@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.post.support;
+package com.lvoxx.sssm.post_service.support;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

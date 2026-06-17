@@ -1,20 +1,20 @@
-package com.lvoxx.sssm.post;
+package com.lvoxx.sssm.post_service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lvoxx.sssm.event.v1.EngagementType;
 import com.lvoxx.sssm.event.v1.PostEngagement;
-import com.lvoxx.sssm.post.domain.OutboxEvent;
-import com.lvoxx.sssm.post.domain.Post;
-import com.lvoxx.sssm.post.error.NotFoundException;
-import com.lvoxx.sssm.post.outbox.OutboxEventFactory;
-import com.lvoxx.sssm.post.repository.OutboxRepository;
-import com.lvoxx.sssm.post.repository.PostRepository;
-import com.lvoxx.sssm.post.service.EngagementService;
-import com.lvoxx.sssm.post.service.PostService;
-import com.lvoxx.sssm.post.support.PostgresIntegrationTest;
-import com.lvoxx.sssm.post.web.dto.CreatePostRequest;
+import com.lvoxx.sssm.post_service.domain.OutboxEvent;
+import com.lvoxx.sssm.post_service.domain.Post;
+import com.lvoxx.sssm.post_service.error.NotFoundException;
+import com.lvoxx.sssm.post_service.outbox.OutboxEventFactory;
+import com.lvoxx.sssm.post_service.repository.OutboxRepository;
+import com.lvoxx.sssm.post_service.repository.PostRepository;
+import com.lvoxx.sssm.post_service.service.EngagementService;
+import com.lvoxx.sssm.post_service.service.PostService;
+import com.lvoxx.sssm.post_service.support.PostgresIntegrationTest;
+import com.lvoxx.sssm.post_service.web.dto.CreatePostRequest;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
