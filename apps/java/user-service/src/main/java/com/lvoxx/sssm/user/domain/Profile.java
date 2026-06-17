@@ -8,6 +8,10 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -22,6 +26,8 @@ import org.hibernate.annotations.UpdateTimestamp;
  * read speed and kept in sync transactionally by the follow flow.
  */
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "profiles")
 public class Profile {
 
@@ -36,21 +42,27 @@ public class Profile {
     @Column(name = "username", nullable = false, unique = true, length = 30, updatable = false)
     private String username;
 
+    @Setter
     @Column(name = "display_name", nullable = false, length = 50)
     private String displayName;
 
+    @Setter
     @Column(name = "bio", length = 160)
     private String bio;
 
+    @Setter
     @Column(name = "avatar_url")
     private String avatarUrl;
 
+    @Setter
     @Column(name = "banner_url")
     private String bannerUrl;
 
+    @Setter
     @Column(name = "location", length = 60)
     private String location;
 
+    @Setter
     @Column(name = "website", length = 120)
     private String website;
 
@@ -71,93 +83,9 @@ public class Profile {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    protected Profile() {
-        // for JPA
-    }
-
     public Profile(UUID keycloakId, String username, String displayName) {
         this.keycloakId = keycloakId;
         this.username = username;
         this.displayName = displayName;
-    }
-
-    public UUID getId() {
-        return id;
-    }
-
-    public UUID getKeycloakId() {
-        return keycloakId;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public void setDisplayName(String displayName) {
-        this.displayName = displayName;
-    }
-
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
-
-    public String getBannerUrl() {
-        return bannerUrl;
-    }
-
-    public void setBannerUrl(String bannerUrl) {
-        this.bannerUrl = bannerUrl;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
-
-    public String getWebsite() {
-        return website;
-    }
-
-    public void setWebsite(String website) {
-        this.website = website;
-    }
-
-    public boolean isVerified() {
-        return verified;
-    }
-
-    public long getFollowerCount() {
-        return followerCount;
-    }
-
-    public long getFollowingCount() {
-        return followingCount;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
-    }
-
-    public Instant getUpdatedAt() {
-        return updatedAt;
     }
 }

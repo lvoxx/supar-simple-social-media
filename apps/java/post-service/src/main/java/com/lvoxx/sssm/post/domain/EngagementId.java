@@ -6,8 +6,11 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.io.Serializable;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * Composite primary key of {@code sssm.post_engagements}: {@code (post_id, actor_id, type)}. Its
@@ -17,6 +20,8 @@ import lombok.Getter;
  */
 @Getter
 @EqualsAndHashCode
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Embeddable
 public class EngagementId implements Serializable {
 
@@ -32,13 +37,4 @@ public class EngagementId implements Serializable {
     @Column(name = "type", nullable = false, length = 20, updatable = false)
     private EngagementKind type;
 
-    protected EngagementId() {
-        // for JPA
-    }
-
-    public EngagementId(UUID postId, UUID actorId, EngagementKind type) {
-        this.postId = postId;
-        this.actorId = actorId;
-        this.type = type;
-    }
 }

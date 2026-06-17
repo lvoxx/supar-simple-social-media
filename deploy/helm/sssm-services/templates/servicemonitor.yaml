@@ -1,0 +1,25 @@
+{{- if .Values.metrics.enabled }}
+{{- $top := . -}}
+{{- range $name, $svc := .Values.services }}
+{{- if $svc.metricsPath }}
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "sssm-services.labels" $top | nindent 4 }}
+    app.kubernetes.io/name: {{ $name }}
+    app.kubernetes.io/component: {{ $name }}
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: {{ $name }}
+      app.kubernetes.io/instance: {{ $top.Release.Name }}
+  endpoints:
+    - port: http
+      path: {{ $svc.metricsPath }}
+      interval: {{ $top.Values.metrics.interval | default "30s" }}
+{{- end }}
+{{- end }}
+{{- end }}

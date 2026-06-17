@@ -8,7 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -24,6 +26,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * The engagement counts are denormalized for read speed (updated by the engagement flow).
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "posts")
 public class Post {
@@ -57,10 +60,6 @@ public class Post {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
-
-    protected Post() {
-        // for JPA
-    }
 
     public Post(UUID authorId, String text, UUID replyToPostId) {
         this.authorId = authorId;

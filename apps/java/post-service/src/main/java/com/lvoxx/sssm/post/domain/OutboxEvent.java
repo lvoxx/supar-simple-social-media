@@ -8,7 +8,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -21,6 +23,8 @@ import org.hibernate.annotations.CreationTimestamp;
  * infrastructure-owned {@code sssm.outbox_events} table.
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Entity
 @Table(name = "outbox_events")
 public class OutboxEvent {
@@ -48,10 +52,6 @@ public class OutboxEvent {
 
     @Column(name = "published_at")
     private Instant publishedAt;
-
-    protected OutboxEvent() {
-        // for JPA
-    }
 
     public OutboxEvent(String aggregateType, UUID aggregateId, String eventType, byte[] payload) {
         this.aggregateType = aggregateType;

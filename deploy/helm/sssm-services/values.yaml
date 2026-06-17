@@ -1,0 +1,72 @@
+# Image coordinates. CI pushes <registry>/<service>:<tag> to GHCR.
+global:
+  imageRegistry: ghcr.io/lvoxx/supar-simple-social-media
+  imageTag: latest
+  imagePullPolicy: IfNotPresent
+
+# Shared Ingress. NOTE: ADR-0003 puts authn on a gateway sidecar in front of the
+# services; until that gateway lands, this Ingress routes straight to each service
+# by path prefix (dev/skeleton). Swap in the gateway as the single backend later.
+ingress:
+  enabled: true
+  className: nginx
+  host: api.example.com
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: sssm-api-tls
+
+# Prometheus scraping. Renders a ServiceMonitor per service that sets metricsPath
+# (needs the kube-prometheus-stack CRDs — see deploy/argocd/apps).
+metrics:
+  enabled: true
+  interval: 30s
+
+# OpenTelemetry traces -> Alloy -> Tempo. OTEL_SERVICE_NAME is injected per service.
+observability:
+  tracing:
+    enabled: true
+    otlpEndpoint: http://alloy.monitoring.svc.cluster.local:4318
+    otlpProtocol: http/protobuf
+
+# Defaults merged into every service unless the service overrides the key.
+defaults:
+  replicaCount: 2
+  livenessPath: /actuator/health/liveness   # Spring Boot probe group
+  readinessPath: /actuator/health/readiness
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      memory: 512Mi
+  env: []
+  # envFrom mounts a ConfigMap/Secret per service (DB_URL, REDIS_URL, the
+  # Secrets-Manager-synced DB password). Left empty in the skeleton.
+  envFrom: []
+
+services:
+  user-service:
+    port: 8081
+    metricsPath: /actuator/prometheus
+    paths:
+      - /api/v1/profiles
+      - /api/v1/follows
+  post-service:
+    port: 8082
+    metricsPath: /actuator/prometheus
+    paths:
+      - /api/v1/posts
+  media-service:
+    port: 8083
+    metricsPath: /actuator/prometheus
+    paths:
+      - /api/v1/media
+  timeline-service:
+    port: 8080
+    livenessPath: /healthz   # Go service: plain /healthz, not actuator
+    readinessPath: /healthz
+    # metricsPath omitted on purpose: the Go service has no /metrics yet, so no
+    # ServiceMonitor is rendered for it. Add the path here once it exposes metrics.
+    paths:
+      - /api/v1/timeline

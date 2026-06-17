@@ -1,0 +1,12 @@
+apiVersion: v2
+name: sssm-services
+description: >-
+  Umbrella chart that deploys the SSSM application services (user, post, media,
+  timeline) as Deployments + ClusterIP Services behind a shared NGINX Ingress.
+  One generic template ranges over .Values.services so adding a service is a
+  values change, not a new template.
+type: application
+version: 0.1.0
+appVersion: "0.1.0"
+maintainers:
+  - name: lvoxx

@@ -1,0 +1,18 @@
+# Test overrides. Storage/imgproxy point at inert placeholders: the S3 clients build without any
+# network call, and integration tests mock StorageService so no real R2 is contacted. imgproxy
+# key/salt are left blank so the builder emits deterministic unsigned URLs in unit tests.
+sssm:
+  storage:
+    endpoint: http://localhost:9000
+    region: auto
+    bucket: sssm-media-test
+    access-key: test
+    secret-key: test-secret
+    presign-ttl: PT15M
+  imgproxy:
+    base-url: http://imgproxy.test
+    key:
+    salt:
+    source-url-prefix: s3://sssm-media-test/
+    widths: 320,640
+    formats: avif,webp

@@ -4,13 +4,28 @@
       "Bash(apps/java/mvnw -f apps/java/pom.xml -pl user-service -am -q -DskipTests test-compile)",
       "Bash(java -version)",
       "Bash(docker version *)",
-      "Bash(echo \"EXIT=$?\")"
+      "Bash(echo \"EXIT=$?\")",
+      "Glob(*)",
+      "Grep(*)"
     ]
   },
   "enabledPlugins": {
     "ecc@ecc": true,
     "claude-mem@thedotmack": true,
     "andrej-karpathy-skills@karpathy-skills": true,
-    "gitnexus@gitnexus-marketplace": true
+    "gitnexus@gitnexus-marketplace": true,
+    "terraform-code-generation@hashicorp": true,
+    "terraform-module-generation@hashicorp": true,
+    "terraform-provider-development@hashicorp": true,
+    "packer-builders@hashicorp": true,
+    "packer-hcp@hashicorp": true,
+    "documentation-standards@claude-code-workflows": true,
+    "code-documentation@claude-code-workflows": true,
+    "backend-development@claude-code-workflows": true,
+    "unit-testing@claude-code-workflows": true,
+    "context-management@claude-code-workflows": true,
+    "kubernetes-operations@claude-code-workflows": true,
+    "cicd-automation@claude-code-workflows": true,
+    "reverse-engineering@claude-code-workflows": true
   }
 }

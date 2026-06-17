@@ -1,0 +1,67 @@
+# Metrics + Grafana + Alertmanager + default dashboards/alerts (upstream, pinned).
+# Grafana is pre-wired with Loki and Tempo datasources so the three signals
+# correlate in one UI. Scrapes any ServiceMonitor/PodMonitor in any namespace.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: sssm
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: 86.2.3 # verified latest stable
+    helm:
+      valuesObject:
+        grafana:
+          defaultDashboardsEnabled: true
+          additionalDataSources:
+            - name: Loki
+              type: loki
+              uid: loki
+              access: proxy
+              url: http://loki-gateway.monitoring.svc.cluster.local
+            - name: Tempo
+              type: tempo
+              uid: tempo
+              access: proxy
+              url: http://tempo.monitoring.svc.cluster.local:3100
+              jsonData:
+                tracesToLogsV2:
+                  datasourceUid: loki
+        alertmanager:
+          enabled: true
+        defaultRules:
+          create: true
+        prometheus:
+          prometheusSpec:
+            retention: 7d
+            # Discover ServiceMonitors/PodMonitors/rules from all namespaces, not just
+            # those carrying this release's Helm labels.
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+            ruleSelectorNilUsesHelmValues: false
+            resources:
+              requests:
+                cpu: 200m
+                memory: 512Mi
+            storageSpec:
+              volumeClaimTemplate:
+                spec:
+                  accessModes: ["ReadWriteOnce"]
+                  resources:
+                    requests:
+                      storage: 20Gi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true # kube-prometheus-stack CRDs are large
