@@ -5,7 +5,9 @@ import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import java.time.Instant;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -19,6 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
  * by {@link com.lvoxx.sssm.post.service.EngagementService}.
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "post_engagements")
 public class Engagement {
@@ -29,10 +32,6 @@ public class Engagement {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
-
-    protected Engagement() {
-        // for JPA
-    }
 
     public Engagement(EngagementId id) {
         this.id = id;

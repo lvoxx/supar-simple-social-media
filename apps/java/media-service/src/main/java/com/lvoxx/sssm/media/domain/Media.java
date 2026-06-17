@@ -10,7 +10,9 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -28,6 +30,7 @@ import org.hibernate.annotations.UpdateTimestamp;
  * (per the entity guardrails in CONTRIBUTING.md: only {@code @Getter} on entities).
  */
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Entity
 @Table(name = "media")
 public class Media {
@@ -66,10 +69,6 @@ public class Media {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt;
-
-    protected Media() {
-        // for JPA
-    }
 
     public Media(UUID ownerId, String objectKey, String contentType) {
         this.ownerId = ownerId;

@@ -7,6 +7,9 @@ import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -16,6 +19,8 @@ import org.hibernate.annotations.CreationTimestamp;
  * and cascades deletes when either profile is removed.
  */
 @Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "follows")
 @IdClass(FollowId.class)
 public class Follow {
@@ -32,24 +37,8 @@ public class Follow {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
-    protected Follow() {
-        // for JPA
-    }
-
     public Follow(UUID followerId, UUID followeeId) {
         this.followerId = followerId;
         this.followeeId = followeeId;
-    }
-
-    public UUID getFollowerId() {
-        return followerId;
-    }
-
-    public UUID getFolloweeId() {
-        return followeeId;
-    }
-
-    public Instant getCreatedAt() {
-        return createdAt;
     }
 }
