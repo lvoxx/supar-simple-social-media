@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.post.service;
+package com.lvoxx.sssm.post_service.service;
 
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
@@ -7,13 +7,13 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.lvoxx.sssm.post.domain.Engagement;
-import com.lvoxx.sssm.post.domain.EngagementId;
-import com.lvoxx.sssm.post.domain.OutboxEvent;
-import com.lvoxx.sssm.post.error.NotFoundException;
-import com.lvoxx.sssm.post.repository.EngagementRepository;
-import com.lvoxx.sssm.post.repository.OutboxRepository;
-import com.lvoxx.sssm.post.repository.PostRepository;
+import com.lvoxx.sssm.post_service.domain.Engagement;
+import com.lvoxx.sssm.post_service.domain.EngagementId;
+import com.lvoxx.sssm.post_service.domain.OutboxEvent;
+import com.lvoxx.sssm.post_service.error.NotFoundException;
+import com.lvoxx.sssm.post_service.repository.EngagementRepository;
+import com.lvoxx.sssm.post_service.repository.OutboxRepository;
+import com.lvoxx.sssm.post_service.repository.PostRepository;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

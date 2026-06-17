@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.support;
+package com.lvoxx.sssm.user_service.support;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

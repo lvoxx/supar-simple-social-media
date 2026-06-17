@@ -1,4 +1,4 @@
-package com.lvoxx.sssm.user.service;
+package com.lvoxx.sssm.user_service.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -7,11 +7,11 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.lvoxx.sssm.user.domain.Profile;
-import com.lvoxx.sssm.user.error.ConflictException;
-import com.lvoxx.sssm.user.error.NotFoundException;
-import com.lvoxx.sssm.user.repository.ProfileRepository;
-import com.lvoxx.sssm.user.web.dto.CreateProfileRequest;
+import com.lvoxx.sssm.user_service.domain.Profile;
+import com.lvoxx.sssm.user_service.error.ConflictException;
+import com.lvoxx.sssm.user_service.error.NotFoundException;
+import com.lvoxx.sssm.user_service.repository.ProfileRepository;
+import com.lvoxx.sssm.user_service.web.dto.CreateProfileRequest;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;

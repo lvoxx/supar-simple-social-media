@@ -1,12 +1,12 @@
-package com.lvoxx.sssm.post.web;
+package com.lvoxx.sssm.post_service.web;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lvoxx.sssm.post.config.SecurityConfig;
-import com.lvoxx.sssm.post.security.GatewayAuthenticationFilter;
-import com.lvoxx.sssm.post.service.EngagementService;
+import com.lvoxx.sssm.post_service.config.SecurityConfig;
+import com.lvoxx.sssm.post_service.security.GatewayAuthenticationFilter;
+import com.lvoxx.sssm.post_service.service.EngagementService;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -70,3 +70,22 @@ services:
     # ServiceMonitor is rendered for it. Add the path here once it exposes metrics.
     paths:
       - /api/v1/timeline
+  notification-service:
+    port: 8084
+    livenessPath: /healthz   # Go service: plain /healthz, not actuator
+    readinessPath: /healthz
+    # metricsPath omitted (no /metrics yet), same as timeline-service.
+    # Needs KAFKA_BROKERS + DATABASE_URL via envFrom once app config/secrets are
+    # wired (tracked under the Phase 1 "wire app env/secrets" remaining item).
+    paths:
+      - /api/v1/notifications
+  engagement-service:
+    port: 8085
+    livenessPath: /healthz   # Go service: plain /healthz, not actuator
+    readinessPath: /healthz
+    # metricsPath omitted (no /metrics yet), same as the other Go services.
+    # Needs KAFKA_BROKERS + DATABASE_URL + REDIS_URL via envFrom once app
+    # config/secrets are wired. Uses a dedicated /api/v1/metrics prefix so it does
+    # not collide with post-service's /api/v1/posts in the path-prefix ingress.
+    paths:
+      - /api/v1/metrics
