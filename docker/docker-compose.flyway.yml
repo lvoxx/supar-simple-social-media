@@ -91,6 +91,26 @@ services:
     networks:
       - postgres
 
+  flyway-engagement:
+    image: flyway/flyway:11
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: >-
+      -url=jdbc:postgresql://postgres:5432/postgres
+      -user=${POSTGRES_USER:-postgres}
+      -password=${POSTGRES_PASSWORD:-postgres}
+      -schemas=sssm
+      -createSchemas=true
+      -connectRetries=10
+      -table=flyway_schema_history_engagement
+      -locations=filesystem:/flyway/sql
+      migrate
+    volumes:
+      - ../deploy/migrations/engagement-service:/flyway/sql:ro
+    networks:
+      - postgres
+
 networks:
   postgres:
     driver: bridge

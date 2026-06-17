@@ -34,6 +34,7 @@ migrate:   ## apply DB migrations via infra (Flyway) — NEVER via the app
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-post
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-media
 	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-notification
+	$(COMPOSE) $(MIGRATE_FILES) run --rm flyway-engagement
 
 ## Codegen -------------------------------------------------------------------
 proto:     ## regenerate Java + Go code from schemas/
