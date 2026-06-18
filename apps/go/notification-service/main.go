@@ -17,6 +17,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/lvoxx/sssm/go/common/httpx"
+	"github.com/redis/go-redis/v9"
 	"github.com/segmentio/kafka-go"
 )
 
@@ -40,6 +41,14 @@ func main() {
 	}
 	defer pool.Close()
 
+	redisOpts, err := redis.ParseURL(cfg.RedisURL)
+	if err != nil {
+		logger.Error("invalid REDIS_URL", "err", err)
+		os.Exit(1)
+	}
+	rdb := redis.NewClient(redisOpts)
+	defer rdb.Close()
+
 	reader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers:  cfg.KafkaBrokers,
 		Topic:    cfg.KafkaTopic,
@@ -49,9 +58,19 @@ func main() {
 	})
 	defer reader.Close()
 
-	hub := NewHub()
+	// Cross-replica SSE fan-out over Redis pub/sub: Publish broadcasts to a per-recipient channel and
+	// every replica serving that recipient delivers to its local streams (hub.Run, below).
+	transport := newRedisPubSub(rdb)
+	hub := NewRedisHub(transport, logger)
 	svc := NewNotificationService(cfg, newPostgresRepository(pool), hub, newLogPusher(logger), logger)
 	consumer := NewConsumer(reader, svc, logger)
+
+	// Receive cross-replica notifications until the transport closes (shutdown) or ctx is cancelled.
+	hubDone := make(chan struct{})
+	go func() {
+		defer close(hubDone)
+		hub.Run(ctx)
+	}()
 
 	// Consume in the background; Run returns nil on graceful ctx cancellation.
 	consumerDone := make(chan struct{})
@@ -87,5 +106,7 @@ func main() {
 		logger.Error("http shutdown failed", "err", err)
 	}
 	reader.Close()
+	transport.Close() // ends hub.Run by closing the pub/sub message stream
 	<-consumerDone
+	<-hubDone
 }

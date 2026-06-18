@@ -12,6 +12,7 @@ import (
 type Config struct {
 	Addr         string   // listen address, e.g. ":8084"
 	DatabaseURL  string   // pgx connection string for the shared Postgres (owns the notifications tables)
+	RedisURL     string   // go-redis URL; backs the cross-replica SSE pub/sub (any replica reaches any client)
 	KafkaBrokers []string // bootstrap brokers for the post-events consumer
 	KafkaTopic   string   // topic carrying PostCreated/PostDeleted/PostEngagement (sssm.post-events)
 	KafkaGroupID string   // consumer group; one offset cursor shared by all replicas
@@ -19,13 +20,15 @@ type Config struct {
 	MaxLimit     int      // hard cap on ?limit to bound query cost
 }
 
-// LoadConfig reads configuration from the environment, applying sensible defaults. DATABASE_URL and
-// KAFKA_BROKERS are required: without a store there is nowhere to persist notifications, and without
-// a broker there is no event source to turn into them.
+// LoadConfig reads configuration from the environment, applying sensible defaults. DATABASE_URL,
+// REDIS_URL, and KAFKA_BROKERS are required: without a store there is nowhere to persist
+// notifications, without Redis the SSE fan-out can't span replicas, and without a broker there is no
+// event source to turn into them.
 func LoadConfig() (Config, error) {
 	cfg := Config{
 		Addr:         ":" + getenv("PORT", "8084"),
 		DatabaseURL:  os.Getenv("DATABASE_URL"),
+		RedisURL:     os.Getenv("REDIS_URL"),
 		KafkaBrokers: splitNonEmpty(getenv("KAFKA_BROKERS", "")),
 		KafkaTopic:   getenv("KAFKA_TOPIC", "sssm.post-events"),
 		KafkaGroupID: getenv("KAFKA_GROUP_ID", "notification-service"),
@@ -34,6 +37,9 @@ func LoadConfig() (Config, error) {
 	}
 	if cfg.DatabaseURL == "" {
 		return Config{}, fmt.Errorf("DATABASE_URL is required")
+	}
+	if cfg.RedisURL == "" {
+		return Config{}, fmt.Errorf("REDIS_URL is required")
 	}
 	if len(cfg.KafkaBrokers) == 0 {
 		return Config{}, fmt.Errorf("KAFKA_BROKERS is required")

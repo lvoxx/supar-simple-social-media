@@ -11,19 +11,26 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"github.com/lvoxx/sssm/go/common/httpx"
 )
 
+// StreamHub is the slice of the hub the handler needs: subscribing a live SSE stream for a user.
+// *RedisHub implements it; tests can supply a fake.
+type StreamHub interface {
+	Subscribe(userID uuid.UUID) (<-chan Notification, func())
+}
+
 // Handler mounts the notification-service HTTP API. It wraps the service (inbox read/ack, device
-// registration) and the Hub (live SSE subscription). Identity comes from the gateway sidecar
+// registration) and the hub (live SSE subscription). Identity comes from the gateway sidecar
 // (X-Auth-Subject); every route is per-caller, so a missing subject is always a 401.
 type Handler struct {
 	svc *NotificationService
-	hub *Hub
+	hub StreamHub
 	log *slog.Logger
 }
 
-func NewHandler(svc *NotificationService, hub *Hub, log *slog.Logger) *Handler {
+func NewHandler(svc *NotificationService, hub StreamHub, log *slog.Logger) *Handler {
 	return &Handler{svc: svc, hub: hub, log: log}
 }
 

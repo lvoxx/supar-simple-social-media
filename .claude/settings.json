@@ -6,7 +6,8 @@
       "Bash(docker version *)",
       "Bash(echo \"EXIT=$?\")",
       "Glob(*)",
-      "Grep(*)"
+      "Grep(*)",
+      "mcp__plugin_gitnexus_gitnexus__impact"
     ]
   },
   "enabledPlugins": {
