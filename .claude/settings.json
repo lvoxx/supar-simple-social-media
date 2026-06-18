@@ -26,6 +26,8 @@
     "context-management@claude-code-workflows": true,
     "kubernetes-operations@claude-code-workflows": true,
     "cicd-automation@claude-code-workflows": true,
-    "reverse-engineering@claude-code-workflows": true
+    "reverse-engineering@claude-code-workflows": true,
+    "codebase-cleanup@claude-code-workflows": true,
+    "backend-api-security@claude-code-workflows": true
   }
 }
