@@ -143,8 +143,11 @@ func (o *osIndex) Search(ctx context.Context, q SearchQuery) (SearchResult, erro
 		return SearchResult{}, err
 	}
 	defer resp.Body.Close()
-	if err := expectOK(resp, "search"); err != nil {
-		return SearchResult{}, err
+	// Check status inline rather than via expectOK, which drains the body on success — Search needs
+	// to decode that body for the hits.
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		snippet, _ := io.ReadAll(io.LimitReader(resp.Body, 512))
+		return SearchResult{}, fmt.Errorf("search: opensearch returned %d: %s", resp.StatusCode, bytes.TrimSpace(snippet))
 	}
 
 	var raw struct {

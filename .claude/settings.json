@@ -7,7 +7,8 @@
       "Bash(echo \"EXIT=$?\")",
       "Glob(*)",
       "Grep(*)",
-      "mcp__plugin_gitnexus_gitnexus__impact"
+      "mcp__plugin_gitnexus_gitnexus__impact",
+      "mcp__plugin_gitnexus_gitnexus__detect_changes"
     ]
   },
   "enabledPlugins": {

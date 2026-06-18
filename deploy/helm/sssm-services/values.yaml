@@ -90,3 +90,13 @@ services:
     # not collide with post-service's /api/v1/posts in the path-prefix ingress.
     paths:
       - /api/v1/metrics
+  search-service:
+    port: 8086
+    livenessPath: /healthz   # Go service: plain /healthz, not actuator
+    readinessPath: /healthz
+    # metricsPath omitted (no /metrics yet), same as the other Go services.
+    # Owns no SQL schema: the index is a derived read model rebuilt by replaying the
+    # Kafka topic, so no migration/Flyway runner. Needs KAFKA_BROKERS + OPENSEARCH_URL
+    # via envFrom once app config/secrets are wired.
+    paths:
+      - /api/v1/search
