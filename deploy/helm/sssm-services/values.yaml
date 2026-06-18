@@ -100,3 +100,14 @@ services:
     # via envFrom once app config/secrets are wired.
     paths:
       - /api/v1/search
+  messaging-service:
+    port: 8087
+    livenessPath: /healthz   # Go service: plain /healthz, not actuator
+    readinessPath: /healthz
+    # metricsPath omitted (no /metrics yet), same as the other Go services.
+    # Serves 1:1 DMs over WebSocket (/api/v1/messages/stream) + a REST history API.
+    # Owns the dm_* tables (flyway-messaging runner). Needs DATABASE_URL + REDIS_URL
+    # via envFrom once app config/secrets are wired (REDIS_URL backs the cross-replica
+    # WebSocket fan-out). No Kafka: DMs originate from the API, not domain events.
+    paths:
+      - /api/v1/messages

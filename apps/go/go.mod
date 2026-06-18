@@ -3,6 +3,7 @@ module github.com/lvoxx/sssm/go
 go 1.26.3
 
 require (
+	github.com/coder/websocket v1.8.13
 	github.com/gin-gonic/gin v1.10.0
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.10.0
